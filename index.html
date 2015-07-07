@@ -20,7 +20,7 @@
 
       <section class="top-bar-section">
 
-        <ul class="left">
+        <ul class="left">180/
           <li class="active"><a href="index.html">Home</a></li>
         </ul>
       </section>
@@ -44,9 +44,14 @@
   function Player (body, head) {
     this.body = body;
     this.head = head;
-    this.rotate = function (radians) {
-      body.rotation += radians;
-      head.rotation += radians;
+    this.rotateHead = function (radians) { head.rotation += radians; }
+    this.rotateBody = function (radians) { body.rotation += radians; }
+
+
+    this.setHeadRotation = function (radians) { head.rotation = radians; }
+    this.addX = function (x) { 
+      body.x += x;
+      head.x += x;
     }
   }
 
@@ -63,32 +68,24 @@
     head.anchor.setTo(0.45, 0.5);
 
     player = new Player(body, head);
-      
+    cursors = game.input.keyboard.createCursorKeys();
   }
 
   function update() {
-    //player.rotate(0.01);
+    player.setHeadRotation(Math.atan2(game.input.y, game.input.x)* 10);
 
     if (cursors.left.isDown)
     {
-        //  Move to the left
-        player.body.velocity.x = -150;
-
-        player.animations.play('left');
+      player.rotateBody(0.02);
+      player.addX(-0.7);
     }
     else if (cursors.right.isDown)
     {
         //  Move to the right
-        player.body.velocity.x = 150;
-
-        player.animations.play('right');
+        player.addX(0.3);
     }
     else
     {
-        //  Stand still
-        player.animations.stop();
-
-        player.frame = 4;
     }
     
   }
