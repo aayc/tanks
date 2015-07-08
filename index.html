@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/css/foundation.css" />
     <script src="/js/vendor/modernizr.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
+    <script type="text/javascript" src="player.js"></script>
+    <script type="text/javascript" src="bullet.js"></script>
   </head>
   <body>
 
@@ -29,84 +31,81 @@
   <script type="text/javascript">
 
   var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+/* TODO:
+Add acceleration and velocity to tank
 
+
+*/
   function preload() {
       game.load.image('redtankbody', 'assets/redtankbody.png');
       game.load.image('redtankhead', 'assets/redtankhead.png');
       game.load.image('wood', 'assets/wood.jpg');
+      game.load.image('bullet_slow', 'assets/bullet_slow.png');
   }
 
   var cursors;
   var player;
+  var bullets;
   var ROTATION_SPEED = 4;
-  var MOVEMENT_SPEED = 0.7;
-
-  function Player (body, head) {
-    this.body = body;
-    this.head = head;
-    this.rotateHead = function (radians) { head.rotation += radians; }
-    this.rotateBody = function (radians) { body.rotation += radians; }
-
-
-    this.setHeadRotation = function (radians) { head.rotation = radians; }
-    this.changePos = function (type, val, positive) {
-      val = (positive) ? val : -val;
-      if (type == 'x') {
-        body.x += val;
-        head.x += val;
-      } 
-      else (type == 'y') {
-        body.y += val;
-        head.y += val;
-      }
-    }
-  }
+  var MOVEMENT_SPEED = 200;
+  var BULLET_SPEED = 160;
+  var PLAYER_BULLET_LIMIT = 6;
+  var numPlayerBullets = 0;
 
   function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    
     game.add.sprite(0, 0, 'wood');
     var body = game.add.sprite(360, 280, 'redtankbody');
     var head = game.add.sprite(360, 280, 'redtankhead');
-
     body.anchor.setTo(0.5, 0.5);
     head.anchor.setTo(0.45, 0.5);
-
+    game.physics.arcade.enable(body);
+    game.physics.arcade.enable(head);
     player = new Player(body, head);
-    cursors = game.input.keyboard.createCursorKeys();
-  }
 
-  function isHorizontal (spr) {
-    return Math.abs(Math.abs(spr.angle) - 180) < 3 || Math.abs(spr.angle) < 3;
-  }
+    bullets = game.add.group();
+    bullets.enableBody = true;    
 
-  function isVertical (spr) {
-    return Math.abs(Math.abs(spr.angle) - 90) < 3;
-  }
+    game.input.onDown.add(fire);
 
-  function isBetween (n, a, b) {
-    return n > a && n < b;
+    cursors = {
+      up: game.input.keyboard.addKey(Phaser.Keyboard.W),
+      down: game.input.keyboard.addKey(Phaser.Keyboard.S),
+      left: game.input.keyboard.addKey(Phaser.Keyboard.A),
+      right: game.input.keyboard.addKey(Phaser.Keyboard.D)
+    }
   }
 
   function update() {
     player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
     var bodyAngle = 0;
+    var motions = [];
     var movType = 'x';
     var positive = true;
-    if (cursors.left.isDown || cursors.right.isDown)
-    {
-      bodyAngle += 180;
-      movType = 'x';
-    }
-    if (cursors.up.isDown || cursors.down.isDown)
-    {
-      bodyAngle += 90;
-      movType = 'y';
-    }
+    if (cursors.left.isDown)  motions.push({ "dir":"x", "sign":"-"});
+    if (cursors.right.isDown) motions.push({ "dir":"x", "sign":"+"});
+    if (cursors.up.isDown)    motions.push({ "dir":"y", "sign":"-"});  
+    if (cursors.down.isDown)  motions.push({ "dir":"y", "sign":"+"});
+    if (motions.length > 0) player.enactMotions(motions);
+  }
 
 
+  function fire () {
+    if (numPlayerBullets <= PLAYER_BULLET_LIMIT) {
+      var angleToMouse = Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x);
+      var bullet = new Bullet(game, player.head.x + 30 * Math.cos(angleToMouse), player.head.y + 30 * Math.sin(angleToMouse),  angleToMouse);
+      bullet.anchor.setTo(0.5, 0.5);
+      bullet.rotation = angleToMouse;
+      bullets.add(bullet);
+      bullet.setMovementPath();
+      game.add.existing(bullet);
+      numPlayerBullets++;
+    } 
+  }
 
-    bodyAngle %= 180;
-    var negBodyAngle = -(180 - bodyAngle);
-    
+  function killSprite (obj) {
+    obj.kill();
   }
 
   </script>
