@@ -37,9 +37,9 @@
   }
 
   var cursors;
-  var body;
-  var head;
   var player;
+  var ROTATION_SPEED = 4;
+  var MOVEMENT_SPEED = 0.7;
 
   function Player (body, head) {
     this.body = body;
@@ -49,20 +49,23 @@
 
 
     this.setHeadRotation = function (radians) { head.rotation = radians; }
-    this.addX = function (x) { 
-      body.x += x;
-      head.x += x;
+    this.changePos = function (type, val, positive) {
+      val = (positive) ? val : -val;
+      if (type == 'x') {
+        body.x += val;
+        head.x += val;
+      } 
+      else (type == 'y') {
+        body.y += val;
+        head.y += val;
+      }
     }
   }
 
   function create() {
-
-    
-
-    //  A simple background for our game
     game.add.sprite(0, 0, 'wood');
-    body = game.add.sprite(360, 280, 'redtankbody');
-    head = game.add.sprite(360, 280, 'redtankhead');
+    var body = game.add.sprite(360, 280, 'redtankbody');
+    var head = game.add.sprite(360, 280, 'redtankhead');
 
     body.anchor.setTo(0.5, 0.5);
     head.anchor.setTo(0.45, 0.5);
@@ -71,22 +74,38 @@
     cursors = game.input.keyboard.createCursorKeys();
   }
 
-  function update() {
-    player.setHeadRotation(Math.atan2(game.input.y, game.input.x)* 10);
+  function isHorizontal (spr) {
+    return Math.abs(Math.abs(spr.angle) - 180) < 3 || Math.abs(spr.angle) < 3;
+  }
 
-    if (cursors.left.isDown)
+  function isVertical (spr) {
+    return Math.abs(Math.abs(spr.angle) - 90) < 3;
+  }
+
+  function isBetween (n, a, b) {
+    return n > a && n < b;
+  }
+
+  function update() {
+    player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
+    var bodyAngle = 0;
+    var movType = 'x';
+    var positive = true;
+    if (cursors.left.isDown || cursors.right.isDown)
     {
-      player.rotateBody(0.02);
-      player.addX(-0.7);
+      bodyAngle += 180;
+      movType = 'x';
     }
-    else if (cursors.right.isDown)
+    if (cursors.up.isDown || cursors.down.isDown)
     {
-        //  Move to the right
-        player.addX(0.3);
+      bodyAngle += 90;
+      movType = 'y';
     }
-    else
-    {
-    }
+
+
+
+    bodyAngle %= 180;
+    var negBodyAngle = -(180 - bodyAngle);
     
   }
 
