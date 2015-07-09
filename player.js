@@ -6,20 +6,8 @@ function Player (body, head) {
 
 
   this.setHeadRotation = function (radians) { head.rotation = radians; }
-  this.enactMotions = function (motions) {
-    for (var i = 0; i < motions.length; i++) {
-      var type = motions[i].dir;
-      var val = MOVEMENT_SPEED;
-      var sign = motions[i].sign;
-      val = (sign == '+') ? val : -val;
-      if (type == 'x') {
-        body.body.velocity.x = val;
-        head.body.velocity.x = val;
-      } 
-      else if (type == 'y') {
-        body.body.velocity.y = val;
-        head.body.velocity.y = val;
-      }
-    }
+  this.setVelocity = function (dir, val) {
+    head.body.velocity[dir] = val;
+    body.body.velocity[dir] = val;
   }
 }

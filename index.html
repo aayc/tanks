@@ -79,15 +79,14 @@ Add acceleration and velocity to tank
 
   function update() {
     player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
-    var bodyAngle = 0;
-    var motions = [];
-    var movType = 'x';
-    var positive = true;
-    if (cursors.left.isDown)  motions.push({ "dir":"x", "sign":"-"});
-    if (cursors.right.isDown) motions.push({ "dir":"x", "sign":"+"});
-    if (cursors.up.isDown)    motions.push({ "dir":"y", "sign":"-"});  
-    if (cursors.down.isDown)  motions.push({ "dir":"y", "sign":"+"});
-    if (motions.length > 0) player.enactMotions(motions);
+    var movingX = false;
+    var movingY = false;
+    if (cursors.left.isDown)  { player.setVelocity('x', -MOVEMENT_SPEED); movingX = true; }
+    if (cursors.right.isDown) { player.setVelocity('x',  MOVEMENT_SPEED); movingX = true; }
+    if (cursors.up.isDown)    { player.setVelocity('y', -MOVEMENT_SPEED); movingY = true; }
+    if (cursors.down.isDown)  { player.setVelocity('y',  MOVEMENT_SPEED); movingY = true; }
+    if (!movingY) player.setVelocity('y', 0);
+    if (!movingX) player.setVelocity('x', 0);
   }
 
 
