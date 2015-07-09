@@ -10,12 +10,6 @@ Bullet = function (game, x, y, angle) {
     this.body.velocity.x = BULLET_SPEED * Math.cos(angle);
     this.body.velocity.y = BULLET_SPEED * Math.sin(angle);
   }
-  
-  console.log("Hey");
-  /*this.move = function (speed) {
-    this.x += speed * Math.cos(angle);
-    this.y += speed * Math.sin(angle);
-  }*/
 }
 
 Bullet.prototype = Object.create(Phaser.Sprite.prototype);

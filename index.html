@@ -46,6 +46,7 @@ Add acceleration and velocity to tank
   var cursors;
   var player;
   var bullets;
+  var bulletCollisionGroup;
   var ROTATION_SPEED = 4;
   var MOVEMENT_SPEED = 200;
   var BULLET_SPEED = 160;
@@ -87,6 +88,12 @@ Add acceleration and velocity to tank
     if (cursors.down.isDown)  { player.setVelocity('y',  MOVEMENT_SPEED); movingY = true; }
     if (!movingY) player.setVelocity('y', 0);
     if (!movingX) player.setVelocity('x', 0);
+
+    console.log(game.physics.arcade.collide(bullets, player.body));
+  }
+
+  function bulletCollide (b1, b2) {
+    console.log("Hooray!");
   }
 
 
@@ -98,6 +105,7 @@ Add acceleration and velocity to tank
       bullet.rotation = angleToMouse;
       bullets.add(bullet);
       bullet.setMovementPath();
+
       game.add.existing(bullet);
       numPlayerBullets++;
     } 
