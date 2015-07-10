@@ -9,6 +9,7 @@
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="bullet.js"></script>
+    <script type="text/javascript" src="wall.js"></script>
   </head>
   <body>
 
@@ -31,42 +32,44 @@
   <script type="text/javascript">
 
   var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-/* TODO:
-Add acceleration and velocity to tank
-
-
-*/
   function preload() {
       game.load.image('redtankbody', 'assets/redtankbody.png');
       game.load.image('redtankhead', 'assets/redtankhead.png');
       game.load.image('wood', 'assets/wood.jpg');
+      game.load.image('wall1', 'assets/wall1.png');
       game.load.image('bullet_slow', 'assets/bullet_slow.png');
   }
+
+  var ROTATION_SPEED = 4;
+  var MOVEMENT_SPEED = 200;
+  var BULLET_SPEED = 160;
+  var PLAYER_BULLET_LIMIT = 5;
 
   var cursors;
   var player;
   var bullets;
-  var bulletCollisionGroup;
-  var ROTATION_SPEED = 4;
-  var MOVEMENT_SPEED = 200;
-  var BULLET_SPEED = 160;
-  var PLAYER_BULLET_LIMIT = 6;
+  var walls;
+
   var numPlayerBullets = 0;
+  var stage = "PLAY";
 
   function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     
     game.add.sprite(0, 0, 'wood');
+
     var body = game.add.sprite(360, 280, 'redtankbody');
     var head = game.add.sprite(360, 280, 'redtankhead');
-    body.anchor.setTo(0.5, 0.5);
-    head.anchor.setTo(0.45, 0.5);
     game.physics.arcade.enable(body);
     game.physics.arcade.enable(head);
+    body.anchor.setTo(0.5, 0.5);
+    head.anchor.setTo(0.45, 0.5);
+   
     player = new Player(body, head);
+    bullets = createBulletGroup();
+    walls = createWallGroup();
 
-    bullets = game.add.group();
-    bullets.enableBody = true;    
+    placeWall(200, 200);
 
     game.input.onDown.add(fire);
 
@@ -79,49 +82,38 @@ Add acceleration and velocity to tank
   }
 
   function update() {
-    player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
-    var movingX = false;
-    var movingY = false;
-    if (cursors.left.isDown)  { player.setVelocity('x', -MOVEMENT_SPEED); movingX = true; }
-    if (cursors.right.isDown) { player.setVelocity('x',  MOVEMENT_SPEED); movingX = true; }
-    if (cursors.up.isDown)    { player.setVelocity('y', -MOVEMENT_SPEED); movingY = true; }
-    if (cursors.down.isDown)  { player.setVelocity('y',  MOVEMENT_SPEED); movingY = true; }
-    if (!movingY) player.setVelocity('y', 0);
-    if (!movingX) player.setVelocity('x', 0);
+    if (stage == "PLAY") {
+      //game.physics.arcade.collide(player.body, bullets, gameOver, null, this);
+      game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
+      game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);//, destroyBoth, null, this);
+      player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
+      var movingX = false;
+      var movingY = false;
+      if (cursors.left.isDown)  { player.setVelocity('x', -MOVEMENT_SPEED); movingX = true; }
+      if (cursors.right.isDown) { player.setVelocity('x',  MOVEMENT_SPEED); movingX = true; }
+      if (cursors.up.isDown)    { player.setVelocity('y', -MOVEMENT_SPEED); movingY = true; }
+      if (cursors.down.isDown)  { player.setVelocity('y',  MOVEMENT_SPEED); movingY = true; }
+      if (!movingY) player.setVelocity('y', 0);
+      if (!movingX) player.setVelocity('x', 0);
 
-    console.log(game.physics.arcade.collide(bullets, player.body));
+      bullets.forEachAlive(function (bullet) {
+        if (bullet.body.blocked.up || bullet.body.blocked.down ||
+          bullet.body.blocked.left || bullet.body.blocked.right) {
+          if (bullet.bouncesLeft == 0) bulletDie(bullet);
+          else bullet.bouncesLeft--;
+        }
+      });
+    }    
   }
 
-  function bulletCollide (b1, b2) {
-    console.log("Hooray!");
-  }
-
-
-  function fire () {
-    if (numPlayerBullets <= PLAYER_BULLET_LIMIT) {
-      var angleToMouse = Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x);
-      var bullet = new Bullet(game, player.head.x + 30 * Math.cos(angleToMouse), player.head.y + 30 * Math.sin(angleToMouse),  angleToMouse);
-      bullet.anchor.setTo(0.5, 0.5);
-      bullet.rotation = angleToMouse;
-      bullets.add(bullet);
-      bullet.setMovementPath();
-
-      game.add.existing(bullet);
-      numPlayerBullets++;
-    } 
-  }
-
-  function killSprite (obj) {
-    obj.kill();
+  
+  function gameOver (b1, b2) {
+    player.body.kill();
+    player.head.kill();
+    bulletDie(b2);
+    stage = "GAMEOVER";
   }
 
   </script>
-    
-    
-    <script src="js/vendor/jquery.js"></script>
-    <script src="js/foundation.min.js"></script>
-    <script>
-      $(document).foundation();
-    </script>
   </body>
 </html>
