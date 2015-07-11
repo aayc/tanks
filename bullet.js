@@ -10,20 +10,14 @@ function createBulletGroup () {
   return group;
 }
 
-function fire () {
-  if (numPlayerBullets <= PLAYER_BULLET_LIMIT) {
-    var angleToMouse = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
-    var x = player.body.x + 30 * Math.cos(angleToMouse);
-    var y = player.body.y + 30 * Math.sin(angleToMouse);
-
-    var bullet = bullets.getFirstExists(false);
-    bullet.reset(x, y);
-    bullet.body.velocity.x = BULLET_SPEED * Math.cos(angleToMouse);
-    bullet.body.velocity.y = BULLET_SPEED * Math.sin(angleToMouse);
-    bullet.rotation = angleToMouse;
-    bullet.bouncesLeft = 1;
-    numPlayerBullets++;
-  }
+function fire (x, y, angle) {
+  var bullet = bullets.getFirstExists(false);
+  bullet.reset(x, y);
+  bullet.body.velocity.x = BULLET_SPEED * Math.cos(angle);
+  bullet.body.velocity.y = BULLET_SPEED * Math.sin(angle);
+  bullet.rotation = angle;
+  bullet.bouncesLeft = 1;
+  numPlayerBullets++;
 }
 
 function bulletDie (obj) {

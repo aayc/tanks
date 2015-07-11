@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/css/foundation.css" />
     <script src="/js/vendor/modernizr.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript" src="browntank.js"></script>
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="bullet.js"></script>
     <script type="text/javascript" src="wall.js"></script>
@@ -32,24 +34,22 @@
   
   <script type="text/javascript">
 
-  var ROTATION_SPEED = 4;
-  var MOVEMENT_SPEED = 200;
-  var BULLET_SPEED = 160;
-  var PLAYER_BULLET_LIMIT = 5;
-
   var cursors;
   var player;
   var bullets;
   var walls;
+  var tanks;
+  var enemies = [];
   var layout;
-
   var numPlayerBullets = 0;
   var stage = "PLAY";
 
-  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+  var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
   function preload() {
       game.load.image('redtankbody', 'assets/redtankbody.png');
       game.load.image('redtankhead', 'assets/redtankhead.png');
+      game.load.image('browntankhead', 'assets/browntankhead.png');
+      game.load.image('browntankbody', 'assets/browntankbody.png');
       game.load.image('wood', 'assets/wood.jpg');
       game.load.image('wall1', 'assets/wall1.png');
       game.load.image('bullet_slow', 'assets/bullet_slow.png');
@@ -58,22 +58,32 @@
 
   function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
-    
     game.add.sprite(0, 0, 'wood');
 
-    var body = game.add.sprite(layout.playerStartX, layout.playerStartY, 'redtankbody');
-    var head = game.add.sprite(0, 0, 'redtankhead');
-    game.physics.arcade.enable(body);
-    body.anchor.setTo(0.5, 0.5);
-    head.anchor.setTo(0.45, 0.5);
-    body.addChild(head);
-
-    player = new Player(body, head);
+    player = new Player(game, layout.playerConfig.x, layout.playerConfig.y);
+    player.setHeadAngle(layout.playerConfig.angle);
     bullets = createBulletGroup();
     walls = createWallGroup();
+    tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
+    tanks.add(player.body);
+
     enactLayout(layout);
 
-    game.input.onDown.add(fire);
+    for (var i = 0; i < layout.brownTanks.length; i++) {
+      var brownTank = new BrownTank(game, layout.brownTanks[i].x, layout.brownTanks[i].y);
+      console.log(brownTank);
+      brownTank.setHeadAngle(layout.brownTanks[i].angle);
+      tanks.add(brownTank.body);
+    }
+
+    game.input.onDown.add(function () {
+      if (numPlayerBullets <= PLAYER_BULLET_LIMIT) {
+        var angleToMouse = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
+        var x = player.body.x + 30 * Math.cos(angleToMouse);
+        var y = player.body.y + 30 * Math.sin(angleToMouse);
+        fire(x, y, angleToMouse);
+      }
+    });
 
     cursors = {
       up: game.input.keyboard.addKey(Phaser.Keyboard.W),
@@ -85,20 +95,12 @@
 
   function update() {
     if (stage == "PLAY") {
-      //game.physics.arcade.collide(player.body, bullets, gameOver, null, this);
-      game.physics.arcade.collide(player.body, walls);
-      //game.physics.arcade.collide(player.head, walls);
+      game.physics.arcade.collide(tanks, walls);
+      game.physics.arcade.collide(tanks, tanks);
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
-      game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);//, destroyBoth, null, this);
-      player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x));
-      var movingX = false;
-      var movingY = false;
-      if (cursors.left.isDown)  { player.setVelocity('x', -MOVEMENT_SPEED); movingX = true; }
-      if (cursors.right.isDown) { player.setVelocity('x',  MOVEMENT_SPEED); movingX = true; }
-      if (cursors.up.isDown)    { player.setVelocity('y', -MOVEMENT_SPEED); movingY = true; }
-      if (cursors.down.isDown)  { player.setVelocity('y',  MOVEMENT_SPEED); movingY = true; }
-      if (!movingY) player.setVelocity('y', 0);
-      if (!movingX) player.setVelocity('x', 0);
+      game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
+      player.setHeadAngle(toDegrees(Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x)));
+      player.handleMovement();
 
       bullets.forEachAlive(function (bullet) {
         if (bullet.body.blocked.up || bullet.body.blocked.down ||
@@ -107,10 +109,15 @@
           else bullet.bouncesLeft--;
         }
       });
+
+
     }    
   }
 
-  
+  function toDegrees (radians) {
+    return radians * 180 / Math.PI;
+  }
+
   function gameOver (b1, b2) {
     player.body.kill();
     player.head.kill();
