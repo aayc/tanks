@@ -39,6 +39,9 @@ function bulletBulletCollide (a, b) {
 
 function bulletWallCollide (b, w) {
   // TODO: ROTATE BULLET
-  if (b.bouncesLeft == 0) b.kill();
+  if (b.bouncesLeft == 0) {
+    b.kill();
+    numPlayerBullets -= 1;
+  }
   else b.bouncesLeft--;
 }

@@ -10,6 +10,7 @@
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="bullet.js"></script>
     <script type="text/javascript" src="wall.js"></script>
+    <script type="text/javascript" src="levelManager.js"></script>
   </head>
   <body>
 
@@ -31,15 +32,6 @@
   
   <script type="text/javascript">
 
-  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-  function preload() {
-      game.load.image('redtankbody', 'assets/redtankbody.png');
-      game.load.image('redtankhead', 'assets/redtankhead.png');
-      game.load.image('wood', 'assets/wood.jpg');
-      game.load.image('wall1', 'assets/wall1.png');
-      game.load.image('bullet_slow', 'assets/bullet_slow.png');
-  }
-
   var ROTATION_SPEED = 4;
   var MOVEMENT_SPEED = 200;
   var BULLET_SPEED = 160;
@@ -49,17 +41,28 @@
   var player;
   var bullets;
   var walls;
+  var layout;
 
   var numPlayerBullets = 0;
   var stage = "PLAY";
+
+  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+  function preload() {
+      game.load.image('redtankbody', 'assets/redtankbody.png');
+      game.load.image('redtankhead', 'assets/redtankhead.png');
+      game.load.image('wood', 'assets/wood.jpg');
+      game.load.image('wall1', 'assets/wall1.png');
+      game.load.image('bullet_slow', 'assets/bullet_slow.png');
+      layout = getLayout(1);
+  }
 
   function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     
     game.add.sprite(0, 0, 'wood');
 
-    var body = game.add.sprite(360, 280, 'redtankbody');
-    var head = game.add.sprite(360, 280, 'redtankhead');
+    var body = game.add.sprite(layout.playerStartX, layout.playerStartY, 'redtankbody');
+    var head = game.add.sprite(layout.playerStartX, layout.playerStartY, 'redtankhead');
     game.physics.arcade.enable(body);
     game.physics.arcade.enable(head);
     body.anchor.setTo(0.5, 0.5);
@@ -68,8 +71,7 @@
     player = new Player(body, head);
     bullets = createBulletGroup();
     walls = createWallGroup();
-
-    placeWall(200, 200);
+    enactLayout(layout);
 
     game.input.onDown.add(fire);
 
@@ -84,6 +86,8 @@
   function update() {
     if (stage == "PLAY") {
       //game.physics.arcade.collide(player.body, bullets, gameOver, null, this);
+      game.physics.arcade.collide(player.body, walls);
+      game.physics.arcade.collide(player.head, walls);
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
       game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);//, destroyBoth, null, this);
       player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
