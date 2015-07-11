@@ -12,9 +12,9 @@ function createBulletGroup () {
 
 function fire () {
   if (numPlayerBullets <= PLAYER_BULLET_LIMIT) {
-    var angleToMouse = Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x);
-    var x = player.head.x + 30 * Math.cos(angleToMouse);
-    var y = player.head.y + 30 * Math.sin(angleToMouse);
+    var angleToMouse = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
+    var x = player.body.x + 30 * Math.cos(angleToMouse);
+    var y = player.body.y + 30 * Math.sin(angleToMouse);
 
     var bullet = bullets.getFirstExists(false);
     bullet.reset(x, y);

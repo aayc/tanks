@@ -62,12 +62,12 @@
     game.add.sprite(0, 0, 'wood');
 
     var body = game.add.sprite(layout.playerStartX, layout.playerStartY, 'redtankbody');
-    var head = game.add.sprite(layout.playerStartX, layout.playerStartY, 'redtankhead');
+    var head = game.add.sprite(0, 0, 'redtankhead');
     game.physics.arcade.enable(body);
-    game.physics.arcade.enable(head);
     body.anchor.setTo(0.5, 0.5);
     head.anchor.setTo(0.45, 0.5);
-   
+    body.addChild(head);
+
     player = new Player(body, head);
     bullets = createBulletGroup();
     walls = createWallGroup();
@@ -87,10 +87,10 @@
     if (stage == "PLAY") {
       //game.physics.arcade.collide(player.body, bullets, gameOver, null, this);
       game.physics.arcade.collide(player.body, walls);
-      game.physics.arcade.collide(player.head, walls);
+      //game.physics.arcade.collide(player.head, walls);
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
       game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);//, destroyBoth, null, this);
-      player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.head.y, game.input.activePointer.x - player.head.x));
+      player.setHeadRotation(Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x));
       var movingX = false;
       var movingY = false;
       if (cursors.left.isDown)  { player.setVelocity('x', -MOVEMENT_SPEED); movingX = true; }

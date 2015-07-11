@@ -7,7 +7,6 @@ function Player (body, head) {
 
   this.setHeadRotation = function (radians) { this.head.rotation = radians; }
   this.setVelocity = function (dir, val) {
-    this.head.body.velocity[dir] = val;
     this.body.body.velocity[dir] = val;
   }
 }
