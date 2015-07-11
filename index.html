@@ -71,9 +71,10 @@
 
     for (var i = 0; i < layout.brownTanks.length; i++) {
       var brownTank = new BrownTank(game, layout.brownTanks[i].x, layout.brownTanks[i].y);
-      console.log(brownTank);
       brownTank.setHeadAngle(layout.brownTanks[i].angle);
+      console.log("Initial angle: " + brownTank.body.angle);
       tanks.add(brownTank.body);
+      enemies.push(brownTank);
     }
 
     game.input.onDown.add(function () {
@@ -109,6 +110,10 @@
           else bullet.bouncesLeft--;
         }
       });
+
+      for (var i = 0; i < enemies.length; i++) {
+        enemies[i].act();
+      }
 
 
     }    

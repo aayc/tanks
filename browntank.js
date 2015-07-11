@@ -7,7 +7,25 @@ function BrownTank (game, x, y) {
 	this.body.addChild(this.head);
 
 	this.setHeadAngle = function (angle) { this.head.angle = angle; }
-	this.setVelocity = function (dir, val) {
-		this.body.body.velocity[dir] = val;
+
+	this.act = function () {
+		this.setHeadAngle(moveAngleTo(this.head.angle, 90));
 	}
+}
+
+// Attempts to find fastest way to move to angle b
+function moveAngleTo (a, b) {
+	
+	if (Math.abs(-(180 - a) - b) > ROTATION_SPEED + 10) {
+		//console.log(-(180 - a) + " " + b);
+		var realA = (a < 0) ? a + 360 : a;
+		var realB = (b < 0) ? b + 360 : b;
+		console.log("Real a: " + realA + " and real b: " + realB);	
+
+		var rotClockwise = Math.abs(realB - realA);
+		var rotCounterClockwise = 360 - rotClockwise;
+		if (rotClockwise <= rotCounterClockwise) { return a - ROTATION_SPEED; }
+		else return a + ROTATION_SPEED;
+	}
+	else return a;
 }
