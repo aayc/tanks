@@ -72,7 +72,6 @@
     for (var i = 0; i < layout.brownTanks.length; i++) {
       var brownTank = new BrownTank(game, layout.brownTanks[i].x, layout.brownTanks[i].y);
       brownTank.setHeadAngle(layout.brownTanks[i].angle);
-      console.log("Initial angle: " + brownTank.body.angle);
       tanks.add(brownTank.body);
       enemies.push(brownTank);
     }
@@ -83,6 +82,7 @@
         var x = player.body.x + 30 * Math.cos(angleToMouse);
         var y = player.body.y + 30 * Math.sin(angleToMouse);
         fire(x, y, angleToMouse);
+        var tween = game.add.tween(enemies[0].head).to({angle:'180'}, 850, Phaser.Easing.Linear.None, true, 100);
       }
     });
 

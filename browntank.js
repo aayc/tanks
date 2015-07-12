@@ -9,14 +9,16 @@ function BrownTank (game, x, y) {
 	this.setHeadAngle = function (angle) { this.head.angle = angle; }
 
 	this.act = function () {
-		this.setHeadAngle(moveAngleTo(this.head.angle, 90));
+		//console.log(this.head.angle);
+		//this.setHeadAngle(this.head.angle + 1);
+		//this.setHeadAngle(moveAngleTo(this.head.angle, -10));
 	}
 }
 
 // Attempts to find fastest way to move to angle b
 function moveAngleTo (a, b) {
 	
-	if (Math.abs(-(180 - a) - b) > ROTATION_SPEED + 10) {
+	if (b - a > ROTATION_SPEED * 2) {
 		//console.log(-(180 - a) + " " + b);
 		var realA = (a < 0) ? a + 360 : a;
 		var realB = (b < 0) ? b + 360 : b;
