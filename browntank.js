@@ -5,27 +5,26 @@ function BrownTank (game, x, y) {
 	this.body.anchor.setTo(0.5, 0.5);
 	this.head.anchor.setTo(0.45, 0.5);
 	this.body.addChild(this.head);
+	this.angleTween = null;
 
 	this.setHeadAngle = function (angle) { this.head.angle = angle; }
 
 	this.act = function () {
-		if (playerInSight(this.body)) {
-			TweenLite.to(this.head, 3, {
-				angle: Math.atan2(player.body.y - this.body.y, player.body.x - this.body.x) * 180 / Math.PI, 
-				ease: Linear.easeNone
-			});
-		}
+		if (playerInSight(this.body) && (this.angleTween == null || !this.angleTween.isRunning)) {
 
-		//console.log(this.head.angle);
-		//this.setHeadAngle(this.head.angle + 1);
-		//this.setHeadAngle(moveAngleTo(this.head.angle, -10));
+			var goalAngle = Math.atan2(player.body.y - this.body.y, player.body.x - this.body.x) * 180 / Math.PI;
+			if (this.head.angle < -90 && this.head.angle >= -180 && goalAngle < 180 && goalAngle > 90) goalAngle = '-' + (180 - goalAngle + -(-180 - this.head.angle));
+			else if (goalAngle < -90 && goalAngle >= -180 && this.head.angle < 180 && this.head.angle > 90) goalAngle = '+' + (180 - this.head.angle + -(-180 - goalAngle));
+
+			this.angleTween = game.add.tween(this.head).to( {angle: goalAngle}, 1000, "Linear", true);
+		}
 	}
 }
 
 function playerInSight (enemy) {
 	var ray = new Phaser.Line(player.body.x, player.body.y, enemy.x, enemy.y);
 	var intersect = getWallIntersection(ray);
-	return intersect;
+	return !intersect;
 }
 
 function getWallIntersection (ray) {

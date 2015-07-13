@@ -6,7 +6,6 @@
     <title>Aaron's Collection of Things</title>
     <link rel="stylesheet" href="/css/foundation.css" />
     <script src="/js/vendor/modernizr.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenLite.min.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="browntank.js"></script>
@@ -93,18 +92,18 @@
       left: game.input.keyboard.addKey(Phaser.Keyboard.A),
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
     }
-
-    game.time.events.loop(Phaser.Timer.SECOND * 5, function () {
+    
+    game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
       enemies.forEach(function (enemy) {
         enemy.act();
       });
-    }
+    }, this);
+    
   }
 
   function update() {
     if (stage == "PLAY") {
       game.physics.arcade.collide(tanks, walls);
-      game.physics.arcade.collide(tanks, tanks);
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
       game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
       player.setHeadAngle(toDegrees(Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x)));
@@ -117,10 +116,6 @@
           else bullet.bouncesLeft--;
         }
       });
-
-      for (var i = 0; i < enemies.length; i++) {
-        enemies[i].act();
-      }
 
 
     }    
