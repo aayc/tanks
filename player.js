@@ -4,6 +4,8 @@ function Player (game, x, y) {
 	game.physics.arcade.enable(this.body);
 	this.body.anchor.setTo(0.5, 0.5);
 	this.head.anchor.setTo(0.45, 0.5);
+	this.body.checkWorldBounds = true;
+	this.body.collideWorldBounds = true;
 	this.body.addChild(this.head);
 
 	this.setHeadAngle = function (angle) { this.head.angle = 0; this.head.angle = angle; }

@@ -6,6 +6,7 @@
     <title>Aaron's Collection of Things</title>
     <link rel="stylesheet" href="/css/foundation.css" />
     <script src="/js/vendor/modernizr.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenLite.min.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="browntank.js"></script>
@@ -82,7 +83,7 @@
         var x = player.body.x + 30 * Math.cos(angleToMouse);
         var y = player.body.y + 30 * Math.sin(angleToMouse);
         fire(x, y, angleToMouse);
-        var tween = game.add.tween(enemies[0].head).to({angle:'180'}, 850, Phaser.Easing.Linear.None, true, 100);
+        
       }
     });
 
@@ -91,6 +92,12 @@
       down: game.input.keyboard.addKey(Phaser.Keyboard.S),
       left: game.input.keyboard.addKey(Phaser.Keyboard.A),
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
+    }
+
+    game.time.events.loop(Phaser.Timer.SECOND * 5, function () {
+      enemies.forEach(function (enemy) {
+        enemy.act();
+      });
     }
   }
 

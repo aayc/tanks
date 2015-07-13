@@ -9,25 +9,54 @@ function BrownTank (game, x, y) {
 	this.setHeadAngle = function (angle) { this.head.angle = angle; }
 
 	this.act = function () {
+		if (playerInSight(this.body)) {
+			TweenLite.to(this.head, 3, {
+				angle: Math.atan2(player.body.y - this.body.y, player.body.x - this.body.x) * 180 / Math.PI, 
+				ease: Linear.easeNone
+			});
+		}
+
 		//console.log(this.head.angle);
 		//this.setHeadAngle(this.head.angle + 1);
 		//this.setHeadAngle(moveAngleTo(this.head.angle, -10));
 	}
 }
 
-// Attempts to find fastest way to move to angle b
-function moveAngleTo (a, b) {
-	
-	if (b - a > ROTATION_SPEED * 2) {
-		//console.log(-(180 - a) + " " + b);
-		var realA = (a < 0) ? a + 360 : a;
-		var realB = (b < 0) ? b + 360 : b;
-		console.log("Real a: " + realA + " and real b: " + realB);	
+function playerInSight (enemy) {
+	var ray = new Phaser.Line(player.body.x, player.body.y, enemy.x, enemy.y);
+	var intersect = getWallIntersection(ray);
+	return intersect;
+}
 
-		var rotClockwise = Math.abs(realB - realA);
-		var rotCounterClockwise = 360 - rotClockwise;
-		if (rotClockwise <= rotCounterClockwise) { return a - ROTATION_SPEED; }
-		else return a + ROTATION_SPEED;
-	}
-	else return a;
+function getWallIntersection (ray) {
+	var distanceToWall = Number.POSITIVE_INFINITY;
+   var closestIntersection = null;
+
+   this.walls.forEach(function(wall) {
+       // Create an array of lines that represent the four edges of each wall
+		var lines = [
+			new Phaser.Line(wall.x, wall.y, wall.x + wall.width, wall.y),
+			new Phaser.Line(wall.x, wall.y, wall.x, wall.y + wall.height),
+			new Phaser.Line(wall.x + wall.width, wall.y,
+			wall.x + wall.width, wall.y + wall.height),
+			new Phaser.Line(wall.x, wall.y + wall.height,
+			wall.x + wall.width, wall.y + wall.height)
+		];
+		//console.log(lines[0].start + " and " + lines[0].end);
+		// Test each of the edges in this wall against the ray.
+		// If the ray intersects any of the edges then the wall must be in the way.
+		for(var i = 0; i < lines.length; i++) {
+			var intersect = Phaser.Line.intersects(ray, lines[i]);
+			if (intersect) {
+				// Find the closest intersection
+				distance = this.game.math.distance(ray.start.x, ray.start.y, intersect.x, intersect.y);
+				if (distance < distanceToWall) {
+					distanceToWall = distance;
+					closestIntersection = intersect;
+				}
+			}
+			}
+		}, this);
+
+		return closestIntersection;
 }
