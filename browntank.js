@@ -17,12 +17,12 @@ function BrownTank (game, x, y) {
 	this.act = function () {
 		var raw = getAngleTo(player.body.x, player.body.y, this.body.x, this.body.y);
 
-		this.angleTween = getTweenToAngle (raw + this.dir * 20, this.head, 1000);
+		this.angleTween = getTweenToAngle (raw + this.dir * 50, this.head, Math.abs(raw + this.dir * 20 - this.head.angle) * 20);
 		this.angleTween.onComplete.add(function () { 
 			this.target.dir = -this.target.dir; 
 			if (rayCastSuccess(player.body.x, player.body.y, this.target.body.x, this.target.body.y, 1)) {
 				console.log(this.target.head.angle);
-				fire(this.target.body.x, this.target.body.y, this.target.head.angle);//this.target.head.angle);
+				fire(this.target.body.x, this.target.body.y, this.target.head.rotation);//this.target.head.angle);
 			}
 			else console.log("Miss");
 			this.target.act(); 
