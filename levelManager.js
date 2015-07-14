@@ -40,7 +40,7 @@ function getLayout(level) {
 				layout.brownTanks.push({
 					x: c * WALL_HEIGHT, 
 					y: r * WALL_WIDTH,
-					angle: 450
+					angle: 180
 				});
 			}
 		}

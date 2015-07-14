@@ -7,7 +7,7 @@ function createBulletGroup () {
   group.setAll('body.bounce.x', 1);
   group.setAll('body.bounce.y', 1);
   group.setAll('body.collideWorldBounds', 'true');
-  return group;
+  return group;a
 }
 
 function fire (x, y, angle) {
@@ -17,7 +17,6 @@ function fire (x, y, angle) {
   bullet.body.velocity.y = BULLET_SPEED * Math.sin(angle);
   bullet.rotation = angle;
   bullet.bouncesLeft = 1;
-  numPlayerBullets++;
 }
 
 function bulletDie (obj) {

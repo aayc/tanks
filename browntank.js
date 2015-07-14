@@ -1,32 +1,53 @@
 function BrownTank (game, x, y) {
+	this.PATROL_INCREMENT = 10;
+
 	this.body = game.add.sprite(x, y, 'browntankbody');
 	this.head = game.add.sprite(0, 0, 'browntankhead');
 	game.physics.arcade.enable(this.body);
 	this.body.anchor.setTo(0.5, 0.5);
 	this.head.anchor.setTo(0.45, 0.5);
 	this.body.addChild(this.head);
+
+	this.patrols = true;
+	this.dir = 1;
 	this.angleTween = null;
 
 	this.setHeadAngle = function (angle) { this.head.angle = angle; }
 
 	this.act = function () {
-		if (playerInSight(this.body) && (this.angleTween == null || !this.angleTween.isRunning)) {
+		var raw = getAngleTo(player.body.x, player.body.y, this.body.x, this.body.y);
 
-			var goalAngle = Math.atan2(player.body.y - this.body.y, player.body.x - this.body.x) * 180 / Math.PI;
-			if (this.head.angle < -90 && this.head.angle >= -180 && goalAngle < 180 && goalAngle > 90) goalAngle = '-' + (180 - goalAngle + -(-180 - this.head.angle));
-			else if (goalAngle < -90 && goalAngle >= -180 && this.head.angle < 180 && this.head.angle > 90) goalAngle = '+' + (180 - this.head.angle + -(-180 - goalAngle));
-
-			this.angleTween = game.add.tween(this.head).to( {angle: goalAngle}, 1000, "Linear", true);
-		}
+		this.angleTween = getTweenToAngle (raw + this.dir * 20, this.head, 1000);
+		this.angleTween.onComplete.add(function () { 
+			this.target.dir = -this.target.dir; 
+			if (rayCastSuccess(player.body.x, player.body.y, this.target.body.x, this.target.body.y, 1)) {
+				console.log(this.target.head.angle);
+				fire(this.target.body.x, this.target.body.y, this.target.head.angle);//this.target.head.angle);
+			}
+			else console.log("Miss");
+			this.target.act(); 
+		}, {target: this, player: player});
 	}
 }
 
-function playerInSight (enemy) {
-	var ray = new Phaser.Line(player.body.x, player.body.y, enemy.x, enemy.y);
-	var intersect = getWallIntersection(ray);
-	return !intersect;
+
+function getTweenToAngle (goalAngle, obj, time) {
+	if (obj.angle < -90 && obj.angle >= -180 && goalAngle < 180 && goalAngle > 45) goalAngle = '-' + (180 - goalAngle + -(-180 - obj.angle));
+	else if (goalAngle < -90 && goalAngle >= -180 && obj.angle < 180 && obj.angle > 45) goalAngle = '+' + (180 - obj.angle + -(-180 - goalAngle));
+	return game.add.tween(obj).to( {angle: goalAngle}, time, "Linear", true);
 }
 
+function getAngleTo (x1, y1, x2, y2) {
+	return Math.atan2(y1 - y2, x1 - x2) * 180 / Math.PI;
+}
+
+function rayCastSuccess (x1, y1, x2, y2, numBouncesLeft) {
+	var ray = new Phaser.Line(x1, y1, x2, y2);
+	var intersect = getWallIntersection(ray);
+	if (intersect && numBouncesLeft > 0) return rayCastSuccess(x1, y1, intersect.x, intersect.y, numBouncesLeft - 1);
+	return !intersect;
+}
+w
 function getWallIntersection (ray) {
 	var distanceToWall = Number.POSITIVE_INFINITY;
    var closestIntersection = null;
@@ -54,8 +75,8 @@ function getWallIntersection (ray) {
 					closestIntersection = intersect;
 				}
 			}
-			}
-		}, this);
-
-		return closestIntersection;
+		}
+	}, this);
+		
+	return closestIntersection;
 }
