@@ -7,6 +7,8 @@ function BrownTank (game, x, y) {
 	this.body.anchor.setTo(0.5, 0.5);
 	this.head.anchor.setTo(0.45, 0.5);
 	this.body.addChild(this.head);
+	this.body.parentFcn = this;
+	this.gameObjType = "BROWN TANK";
 
 	this.patrols = true;
 	this.dir = 1;

@@ -10,9 +10,10 @@ function createBulletGroup () {
 }
 
 function fire (x, y, rot, owner) {
-  var bullet = bullets.getFirstExists(false);
+  var bullet = bullets.getFirstDead();
   bullet.reset(x, y);
-  game.physics.arcade.velocityFromRotation(rot, BULLET_SPEED, bullet.body.velocity);
+  bullet.body.velocity.x = BULLET_SPEED * Math.cos(rot);
+  bullet.body.velocity.y = BULLET_SPEED * Math.sin(rot);
   bullet.rotation = rot;
   bullet.bouncesLeft = 1;
   bullet.owner = owner;
@@ -32,7 +33,6 @@ function bulletBulletCollide (a, b) {
 }
 
 function bulletWallCollide (b, w) {
-  // TODO: ROTATE BULLET
   if (b.bouncesLeft == 0) {
     b.kill();
     b.owner.numBullets -= 1;

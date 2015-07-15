@@ -7,6 +7,8 @@ function Player (game, x, y) {
 	this.body.checkWorldBounds = true;
 	this.body.collideWorldBounds = true;
 	this.body.addChild(this.head);
+	this.body.parentFcn = this;
+	this.gameObjType = "PLAYER";
 
 	this.numBullets = 0;
 
