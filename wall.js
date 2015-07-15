@@ -17,9 +17,3 @@ function placeWall (x, y) {
 	var wall = walls.getFirstExists(false);
 	wall.reset(x, y); 
 }
-
-function clearWalls () {
-	walls.forEachAlive(function (wall) {
-		wall.destroy();
-	});
-}

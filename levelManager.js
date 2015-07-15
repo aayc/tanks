@@ -5,7 +5,8 @@ var numCols = GAME_HEIGHT / WALL_HEIGHT;
 function getLayout(level) {
 	var layout = {
 		playerConfig: {},
-		brownTanks: []
+		brownTanks: [],
+		grayTanks: []
 	};
 
 	// Set grid
@@ -38,7 +39,7 @@ function getLayout(level) {
 						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0],
 						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 						  		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
@@ -59,6 +60,13 @@ function getLayout(level) {
 					y: r * WALL_WIDTH,
 					angle: 0
 				});
+			}
+			else if (layout.grid[r][c] == 4) {
+				layout.grayTanks.push({
+					x: c * WALL_HEIGHT,
+					y: r * WALL_WIDTH,
+					angle: 0
+				})
 			}
 		}
 	}
