@@ -8,6 +8,7 @@
     <script src="/js/vendor/modernizr.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript" src="enemy-commons.js"></script>
     <script type="text/javascript" src="browntank.js"></script>
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="bullet.js"></script>
@@ -41,7 +42,6 @@
   var tanks;
   var enemies = [];
   var layout;
-  var numPlayerBullets = 0;
   var stage = "PLAY";
 
   var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
@@ -50,6 +50,9 @@
       game.load.image('redtankhead', 'assets/redtankhead.png');
       game.load.image('browntankhead', 'assets/browntankhead.png');
       game.load.image('browntankbody', 'assets/browntankbody.png');
+      game.load.image('horizontal_border', 'assets/horizontal_border.png');
+      game.load.image('vertical_border', 'assets/vertical_border.png');
+      game.load.image('next-mission-bg', 'assets/mission-progress-bg.png')
       game.load.image('wood', 'assets/wood.jpg');
       game.load.image('wall1', 'assets/wall1.png');
       game.load.image('bullet_slow', 'assets/bullet_slow.png');
@@ -64,6 +67,15 @@
     player.head.angle = layout.playerConfig.angle;
     bullets = createBulletGroup();
     walls = createWallGroup();
+    borderTop = game.add.sprite(0, 0, 'horizontal_border');
+    borderBottom = game.add.sprite(0, GAME_HEIGHT - WALL_HEIGHT, 'horizontal_border');
+    borderLeft = game.add.sprite(0, 0, 'vertical_border');
+    borderRight = game.add.sprite(GAME_WIDTH - WALL_WIDTH, 0, 'vertical_border');
+    walls.add(borderTop);
+    walls.add(borderBottom);
+    walls.add(borderLeft);
+    walls.add(borderRight);
+    walls.setAll('body.immovable', 'true');
     tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
     tanks.add(player.body);
 
@@ -77,13 +89,11 @@
     }
 
     game.input.onDown.add(function () {
-      if (numPlayerBullets <= PLAYER_BULLET_LIMIT) {
+      if (player.numBullets <= PLAYER_BULLET_LIMIT) {
         var angleToMouse = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
         var x = player.body.x + 30 * Math.cos(angleToMouse);
         var y = player.body.y + 30 * Math.sin(angleToMouse);
-        numPlayerBullets++;
-        fire(x, y, angleToMouse);
-        
+        fire(x, y, angleToMouse, player);
       }
     });
 
@@ -93,24 +103,15 @@
       left: game.input.keyboard.addKey(Phaser.Keyboard.A),
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
     }
-    
-    /*enemies.forEach(function (enemy) {
-      enemy.patrol();
-    });*/
 
     game.time.events.loop(Phaser.Timer.SECOND / 13, function () {
-      enemies.forEach(function (enemy) {
-        enemy.patrol();
-      });
+      enemies.forEach(function (enemy) { enemy.patrol(); });
     }, this);
     
 
     game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
-      enemies.forEach(function (enemy) {
-        enemy.act();
-      });
+      enemies.forEach(function (enemy) { enemy.act(); });
     }, this);
-    
     
     game.time.advancedTiming = true;
   }
@@ -118,23 +119,12 @@
   function update() {
     game.debug.text(game.time.fps, 2, 14, "#00ff00");
     
-    if (stage == "PLAY") {
-      game.physics.arcade.collide(tanks, walls);
-      game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
-      game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
-      player.head.rotation = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
-      player.handleMovement();
-
-      bullets.forEachAlive(function (bullet) {
-        if (bullet.body.blocked.up || bullet.body.blocked.down ||
-          bullet.body.blocked.left || bullet.body.blocked.right) {
-          if (bullet.bouncesLeft == 0) bulletDie(bullet);
-          else bullet.bouncesLeft--;
-        }
-      });
-
-
-    }    
+    game.physics.arcade.collide(tanks, walls);
+    game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
+    game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
+    player.head.rotation = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
+    player.handleMovement();
+    
   }
 
   function gameOver (b1, b2) {

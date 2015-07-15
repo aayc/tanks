@@ -8,6 +8,8 @@ function Player (game, x, y) {
 	this.body.collideWorldBounds = true;
 	this.body.addChild(this.head);
 
+	this.numBullets = 0;
+
 	this.handleMovement = function () {
 		this.body.body.velocity.x = 0;
 		this.body.body.velocity.y = 0;

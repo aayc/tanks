@@ -1,7 +1,6 @@
 function createWallGroup () {
 	var group = game.add.physicsGroup(Phaser.Physics.ARCADE);
 	group.createMultiple(100, 'wall1');
-	group.setAll('body.immovable', true);
 	return group;
 }
 
