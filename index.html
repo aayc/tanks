@@ -6,7 +6,7 @@
     <title>Aaron's Collection of Things</title>
     <link rel="stylesheet" href="/css/foundation.css" />
     <script src="/js/vendor/modernizr.js"></script>
-    <script type="text/javascript" src="js/phaser.min.js"></script>
+    <script type="text/javascript" src="js/phaser.js"></script>
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="browntank.js"></script>
     <script type="text/javascript" src="player.js"></script>
@@ -61,7 +61,7 @@
     game.add.sprite(0, 0, 'wood');
 
     player = new Player(game, layout.playerConfig.x, layout.playerConfig.y);
-    player.setHeadAngle(layout.playerConfig.angle);
+    player.head.angle = layout.playerConfig.angle;
     bullets = createBulletGroup();
     walls = createWallGroup();
     tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
@@ -71,7 +71,7 @@
 
     for (var i = 0; i < layout.brownTanks.length; i++) {
       var brownTank = new BrownTank(game, layout.brownTanks[i].x, layout.brownTanks[i].y);
-      brownTank.setHeadAngle(layout.brownTanks[i].angle);
+      brownTank.head.angle = layout.brownTanks[i].angle;
       tanks.add(brownTank.body);
       enemies.push(brownTank);
     }
@@ -95,21 +95,33 @@
     }
     
     enemies.forEach(function (enemy) {
-      enemy.act();
+      enemy.patrol();
     });
 
-    /*game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
-      
-    }, this);*/
+    game.time.events.loop(Phaser.Timer.SECOND / 10, function () {
+      enemies.forEach(function (enemy) {
+        enemy.patrol();
+      });
+    }, this);
+
+    game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
+      enemies.forEach(function (enemy) {
+        enemy.act();
+      });
+    }, this);
     
+    
+    game.time.advancedTiming = true;
   }
 
   function update() {
+    game.debug.text(game.time.fps, 2, 14, "#00ff00");
+    game.debug.text(enemies[0].head.rotation, 2, 28, "#00ff00");
     if (stage == "PLAY") {
       game.physics.arcade.collide(tanks, walls);
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
       game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
-      player.setHeadAngle(toDegrees(Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x)));
+      player.head.rotation = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
       player.handleMovement();
 
       bullets.forEachAlive(function (bullet) {
@@ -122,10 +134,6 @@
 
 
     }    
-  }
-
-  function toDegrees (radians) {
-    return radians * 180 / Math.PI;
   }
 
   function gameOver (b1, b2) {

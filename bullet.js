@@ -10,12 +10,11 @@ function createBulletGroup () {
   return group;a
 }
 
-function fire (x, y, angle) {
+function fire (x, y, rot) {
   var bullet = bullets.getFirstExists(false);
   bullet.reset(x, y);
-  bullet.body.velocity.x = BULLET_SPEED * Math.cos(angle);
-  bullet.body.velocity.y = BULLET_SPEED * Math.sin(angle);
-  bullet.rotation = angle;
+  game.physics.arcade.velocityFromRotation(rot, BULLET_SPEED, bullet.body.velocity);
+  bullet.rotation = rot;
   bullet.bouncesLeft = 1;
 }
 
