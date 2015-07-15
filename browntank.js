@@ -10,32 +10,24 @@ function BrownTank (game, x, y) {
 
 	this.patrols = true;
 	this.dir = 1;
+	this.goalRot = 0;
 	this.rotTween = null;
 
 	this.patrol = function () {
-		var raw = getRadTo(player.body.x, player.body.y, this.body.x, this.body.y);
-		this.head.rotation = lerp_dir(this.head.rotation, raw, 0.2);
-		/*this.rotTween = getTweenToRotation (raw + this.dir * 0.4, this.head, Math.abs(raw + this.dir * 0.4 - this.head.rotation) * 500);
-		this.rotTween.onComplete.add(function () { 
-			this.target.dir = -this.target.dir; 
-			this.target.patrol(); 
-		}, {target: this, player: player});*/
+		/*var next = lerp_dir(this.head.rotation, this.goalRot, 0.1);
+		this.head.rotation = next;
+		if (next == this.goalRot) {
+			this.dir *= -1;
+			this.goalRot = getRadTo(player.body.x, player.body.y, this.body.x, this.body.y) + this.dir;
+		}*/
 	}
 
 	// Operating off of timer
 	this.act = function () {
-		if (shouldFire(this.body.x, this.body.y, this.head.rotation, 1)) {
+		/*if (shouldFire(this.body.x, this.body.y, this.head.rotation, 1)) {
 			fire(this.body.x, this.body.y, this.head.rotation);
-		}
+		}*/
 	}
-}
-
-
-function getTweenToRotation (goalRot, obj, time) {
-	if (4.56789 < -1.57079 && 4.56789 >= -3.1415 && goalRot < 3.1415 && goalRot > 0.78539) { console.log("here"); goalRot = '-' + (6.28318 - goalRot + 4.56789); }
-	else if (goalRot < -1.57079 && goalRot >= -3.1415 && 4.56789 < 3.1415 && 4.56789 > 0.78539) goalRot = '+' + (6.28318 - 4.56789 + goalRot);
-	console.log(4.56789);
-	return game.add.tween(obj).to( {rotation: goalRot}, time, "Linear", true);
 }
 
 function getRadTo (x1, y1, x2, y2) {
@@ -47,17 +39,23 @@ function shouldFire (x, y, rotation, numBouncesLeft) {
 	var playerIntersect = getPlayerIntersect(ray);
 
 	if (playerIntersect) {
-		//var rayToPlayer = new Phaser.Line(x, y, playerIntersect.x, playerIntersect.y);
-		//var intersect = getWallIntersection(rayToPlayer);
-		return true;//!intersect;
+		var rayToPlayer = new Phaser.Line(x, y, playerIntersect.x, playerIntersect.y);
+		var intersect = getWallIntersection(rayToPlayer);
+		return !intersect;
 	}
 	else {
-		/*if (numBouncesLeft > 0) {
+		if (numBouncesLeft > 0) {
 			var intersect = getWallIntersection(ray);
-			return shouldFire(intersect.x, intersect.y, )
+			if (!intersect) { return false; }
+
+			var bounceAngle;
+			if (intersect.bounceType == 'H') bounceAngle = -rotation;
+			else if (rotation < 0) bounceAngle = -Math.PI - rotation;
+			else bounceAngle = Math.PI - rotation;
+			//console.log("Fired due to wall bounce at " + intersect.x + "," + intersect.y + " and angle: " + bounceAngle);
+			return shouldFire(intersect.x, intersect.y, bounceAngle, numBouncesLeft - 1);
 		}
-		else return false;*/
-		return false;
+		else return false;
 	}
 }
 
@@ -69,8 +67,6 @@ function lerp_dir (cur_dir, tar_dir, inc)
 		tar_dir += (tar_dir < cur_dir) ? 2 * Math.PI : -2 * Math.PI;
 	}
 
-	console.log("here");
-
 	if ( tar_dir > cur_dir) cur_dir += inc;
 	else if ( tar_dir < cur_dir) cur_dir -= inc;
 	
@@ -78,6 +74,9 @@ function lerp_dir (cur_dir, tar_dir, inc)
 }
 
 function getPlayerIntersect (ray) {
+	var maxDistance = Number.POSITIVE_INFINITY;
+	var closestIntersection = null;
+
 	var left = player.body.x - player.body.width * 0.5;
 	var right = player.body.x + player.body.width * 0.5;
 	var top = player.body.y - player.body.height * 0.5;
@@ -92,10 +91,16 @@ function getPlayerIntersect (ray) {
 
 	for (var i = 0; i < lines.length; i++) {
 		var intersect = Phaser.Line.intersects(ray, lines[i]);
-		if (intersect) { return intersect; }
+		if (intersect) { 
+			distance = this.game.math.distance(ray.start.x, ray.start.y, intersect.x, intersect.y);
+			if (distance < maxDistance)  {
+				maxDistance = distance;
+				closestIntersection = intersect;
+			}
+		}
 	}
 
-	return null;
+	return closestIntersection;
 }
 
 
@@ -125,6 +130,8 @@ function getWallIntersection (ray) {
 				if (distance < distanceToWall) {
 					distanceToWall = distance;
 					closestIntersection = intersect;
+					if (i == 0 || i == 3) closestIntersection.bounceType = 'H';
+					else closestIntersection.bounceType = 'V';
 				}
 			}
 		}

@@ -6,7 +6,7 @@
     <title>Aaron's Collection of Things</title>
     <link rel="stylesheet" href="/css/foundation.css" />
     <script src="/js/vendor/modernizr.js"></script>
-    <script type="text/javascript" src="js/phaser.js"></script>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="browntank.js"></script>
     <script type="text/javascript" src="player.js"></script>
@@ -94,15 +94,16 @@
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
     }
     
-    enemies.forEach(function (enemy) {
+    /*enemies.forEach(function (enemy) {
       enemy.patrol();
-    });
+    });*/
 
     game.time.events.loop(Phaser.Timer.SECOND / 10, function () {
       enemies.forEach(function (enemy) {
         enemy.patrol();
       });
     }, this);
+    
 
     game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
       enemies.forEach(function (enemy) {
@@ -116,7 +117,7 @@
 
   function update() {
     game.debug.text(game.time.fps, 2, 14, "#00ff00");
-    game.debug.text(enemies[0].head.rotation, 2, 28, "#00ff00");
+    
     if (stage == "PLAY") {
       game.physics.arcade.collide(tanks, walls);
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
