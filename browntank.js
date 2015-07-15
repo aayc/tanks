@@ -14,19 +14,19 @@ function BrownTank (game, x, y) {
 	this.rotTween = null;
 
 	this.patrol = function () {
-		/*var next = lerp_dir(this.head.rotation, this.goalRot, 0.1);
-		this.head.rotation = next;
-		if (next == this.goalRot) {
+		this.head.rotation = lerp_dir(this.head.rotation, this.goalRot, 0.1);
+		
+		if (this.head.rotation == this.goalRot) {
 			this.dir *= -1;
-			this.goalRot = getRadTo(player.body.x, player.body.y, this.body.x, this.body.y) + this.dir;
-		}*/
+			this.goalRot = Phaser.Math.wrapAngle(getRadTo(player.body.x, player.body.y, this.body.x, this.body.y) + this.dir, true);
+		}
 	}
 
 	// Operating off of timer
 	this.act = function () {
-		/*if (shouldFire(this.body.x, this.body.y, this.head.rotation, 1)) {
+		if (shouldFire(this.body.x, this.body.y, this.head.rotation, 1)) {
 			fire(this.body.x, this.body.y, this.head.rotation);
-		}*/
+		}
 	}
 }
 
@@ -41,7 +41,9 @@ function shouldFire (x, y, rotation, numBouncesLeft) {
 	if (playerIntersect) {
 		var rayToPlayer = new Phaser.Line(x, y, playerIntersect.x, playerIntersect.y);
 		var intersect = getWallIntersection(rayToPlayer);
-		return !intersect;
+		if (intersect == null) return true;
+		if (intersect.x == ray.start.x && intersect.y == ray.start.y) return true;
+		return false;
 	}
 	else {
 		if (numBouncesLeft > 0) {
@@ -52,7 +54,7 @@ function shouldFire (x, y, rotation, numBouncesLeft) {
 			if (intersect.bounceType == 'H') bounceAngle = -rotation;
 			else if (rotation < 0) bounceAngle = -Math.PI - rotation;
 			else bounceAngle = Math.PI - rotation;
-			//console.log("Fired due to wall bounce at " + intersect.x + "," + intersect.y + " and angle: " + bounceAngle);
+			console.log("Fired due to wall bounce at " + intersect.x + "," + intersect.y + " and angle: " + bounceAngle);
 			return shouldFire(intersect.x, intersect.y, bounceAngle, numBouncesLeft - 1);
 		}
 		else return false;
@@ -61,14 +63,14 @@ function shouldFire (x, y, rotation, numBouncesLeft) {
 
 function lerp_dir (cur_dir, tar_dir, inc)
 {	
-	if ( Math.abs( tar_dir - cur_dir) <= inc || Math.abs( tar_dir - cur_dir) >= (2 * Math.PI - inc)) cur_dir = tar_dir;
+	if ( Math.abs( tar_dir - cur_dir) <= inc || Math.abs( tar_dir - cur_dir) >= (2 * Math.PI - inc)) { return tar_dir; }
 	else if ( Math.abs( tar_dir - cur_dir) > Math.PI)
 	{
 		tar_dir += (tar_dir < cur_dir) ? 2 * Math.PI : -2 * Math.PI;
 	}
 
-	if ( tar_dir > cur_dir) cur_dir += inc;
-	else if ( tar_dir < cur_dir) cur_dir -= inc;
+	if ( tar_dir > cur_dir) return cur_dir + inc;
+	else if ( tar_dir < cur_dir) return cur_dir - inc;
 	
 	return cur_dir;
 }
