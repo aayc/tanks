@@ -47,6 +47,7 @@
 
   var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
   function preload() {
+      game.load.image('tankcenter', 'assets/tankcenter.png');
       game.load.image('redtankbody', 'assets/redtankbody.png');
       game.load.image('redtankhead', 'assets/redtankhead.png');
       game.load.image('browntankhead', 'assets/browntankhead.png');
@@ -71,7 +72,7 @@
     bullets = createBulletGroup();
     walls = createWallGroup();
     tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
-    tanks.add(player.body);
+    tanks.add(player.heart);
 
     enactLayout(layout);
 
@@ -85,15 +86,15 @@
     for (var i = 0; i < layout.grayTanks.length; i++) {
       var grayTank = new GrayTank (game, layout.grayTanks[i].x, layout.grayTanks[i].y);
       grayTank.head.angle = layout.grayTanks[i].angle;
-      tanks.add(grayTank.body);
+      tanks.add(grayTank.heart);
       enemies.push(grayTank);
     }
 
     game.input.onDown.add(function () {
       if (player.numBullets <= PLAYER_BULLET_LIMIT && !game.paused) {
-        var angleToMouse = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
-        var x = player.body.x + 30 * Math.cos(angleToMouse);
-        var y = player.body.y + 30 * Math.sin(angleToMouse);
+        var angleToMouse = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
+        var x = player.heart.x + 30 * Math.cos(angleToMouse);
+        var y = player.heart.y + 30 * Math.sin(angleToMouse);
         fire(x, y, angleToMouse, player);
       }
     });
@@ -105,14 +106,16 @@
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
     }
 
-    game.time.events.loop(Phaser.Timer.SECOND / 13, function () {
-      enemies.forEach(function (enemy) { enemy.patrol(); });
-    }, this);
-    
+    enemies.forEach(function (enemy) { enemy.patrol(); });
 
     game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
-      enemies.forEach(function (enemy) { enemy.act(); });
+      enemies.forEach(function (enemy) { enemy.act(); enemy.move(); });
     }, this);
+
+    // IN CASE ACT IS TOO OFTEN
+    /*game.time.events.loop(Phaser.Timer.SECOND, function () {
+      enemies.forEach(function (enemy) { enemy.move(); });
+    })*/
     
     game.time.advancedTiming = true;
   }
@@ -124,7 +127,7 @@
       game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
       game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
       game.physics.arcade.collide(tanks, bullets, destroyTank, null, this);
-      player.head.rotation = Math.atan2(game.input.activePointer.y - player.body.y, game.input.activePointer.x - player.body.x);
+      player.head.rotation = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
       player.handleMovement();
     }
   }
@@ -155,9 +158,8 @@
   function destroyEnemy (enemy) {
     for (var i = 0; i < enemies.length; i++) {
       if (enemies[i] === enemy) {
+        enemy.die();
         enemies.splice(i, 1);
-        enemy.head.kill();
-        enemy.body.kill();
         break;
       }
     }
