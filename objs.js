@@ -9,13 +9,13 @@ function createBulletGroup () {
   return group;
 }
 
-function fire (x, y, rot, owner) {
+function fire (x, y, rot, owner, speed, bounces) {
   var bullet = bullets.getFirstDead();
   bullet.reset(x, y);
-  bullet.body.velocity.x = BULLET_SPEED * Math.cos(rot);
-  bullet.body.velocity.y = BULLET_SPEED * Math.sin(rot);
+  bullet.body.velocity.x = speed * Math.cos(rot);
+  bullet.body.velocity.y = speed * Math.sin(rot);
   bullet.rotation = rot;
-  bullet.bouncesLeft = 1;
+  bullet.bouncesLeft = bounces;
   bullet.owner = owner;
   owner.numBullets++;
 }
@@ -52,12 +52,12 @@ function createWallGroup () {
   group.add(borderBottom);
   group.add(borderLeft);
   group.add(borderRight);
-  group.createMultiple(20, 'wall1');
+  group.createMultiple(40, 'wall1');
   group.setAll('body.immovable', 'true');
   return group;
 }
 
 function placeWall (x, y) {
-  var wall = walls.getFirstExists(false);
+  var wall = walls.getFirstDead();
   wall.reset(x, y); 
 }

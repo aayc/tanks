@@ -7,7 +7,7 @@ function getRandomRotation () {
 }
 
 function shouldFire (x, y, rotation, numBouncesLeft) {
-	var ray = new Phaser.Line(x, y, Math.cos(rotation) * 5000 + x, Math.sin(rotation) * 5000 + y);
+	var ray = new Phaser.Line(x, y, Math.cos(rotation) * 500 + x, Math.sin(rotation) * 500 + y);
 	var playerIntersect = getPlayerIntersect(ray);
 
 	if (playerIntersect) {
@@ -97,8 +97,6 @@ function getPlayerIntersect (ray) {
 	return closestIntersection;
 }
 
-
-
 function getWallIntersection (ray) {
 	var distanceToWall = Number.POSITIVE_INFINITY;
    var closestIntersection = null;
@@ -132,4 +130,22 @@ function getWallIntersection (ray) {
 	}, this);
 		
 	return closestIntersection;
+}
+
+function destroyTank (a, b) {
+    bulletDie(b);
+    if (a.parentFcn.gameObjType == "PLAYER") {}
+    else destroyEnemy(a.parentFcn);
+  }
+
+function destroyEnemy (enemy) {
+ for (var i = 0; i < enemies.length; i++) {
+   if (enemies[i] === enemy) {
+     enemy.die();
+     enemies.splice(i, 1);
+     break;
+   }
+ }
+
+ if (enemies.length == 0) win();
 }

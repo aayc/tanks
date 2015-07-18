@@ -45,7 +45,8 @@
   var tanks;
   var enemies = [];
   var layout;
-  var level = 1;
+  var level = 5;
+  var skillPts = 0;
   var stage = "PLAY";
 
   var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, 'game');
@@ -70,27 +71,14 @@
 
   function switchState () {
     game.paused = false;
-    if (level % 2 == 0) game.state.start("level-up");
+    if (level % 2 == 0) {
+      skillPts++;
+      game.state.start("level-up");
+    }
     else game.state.start("next-mission");
   }
 
-  function destroyTank (a, b) {
-    bulletDie(b);
-    if (a.parentFcn.gameObjType == "PLAYER") {}
-    else destroyEnemy(a.parentFcn);
-  }
-
-  function destroyEnemy (enemy) {
-    for (var i = 0; i < enemies.length; i++) {
-      if (enemies[i] === enemy) {
-        enemy.die();
-        enemies.splice(i, 1);
-        break;
-      }
-    }
-
-    if (enemies.length == 0) win();
-  }
+  
 
   </script>
   </body>
