@@ -8,12 +8,15 @@
     <script src="/js/vendor/modernizr.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="config.js"></script>
-    <script type="text/javascript" src="enemy-commons.js"></script>
+    <script type="text/javascript" src="play-state.js"></script>
+    <script type="text/javascript" src="next-mission-state.js"></script>
+    <script type="text/javascript" src="title-state.js"></script>
+    <script type="text/javascript" src="level-up.js"></script>
+    <script type="text/javascript" src="mechanics-commons.js"></script>
     <script type="text/javascript" src="enemies.js"></script>
     <script type="text/javascript" src="player.js"></script>
-    <script type="text/javascript" src="bullet.js"></script>
-    <script type="text/javascript" src="wall.js"></script>
-    <script type="text/javascript" src="levelManager.js"></script>
+    <script type="text/javascript" src="objs.js"></script>
+    <script type="text/javascript" src="level-manager.js"></script>
   </head>
   <body>
 
@@ -45,93 +48,14 @@
   var level = 1;
   var stage = "PLAY";
 
-  var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-  function preload() {
-      game.load.image('tankcenter', 'assets/tankcenter.png');
-      game.load.image('redtankbody', 'assets/redtankbody.png');
-      game.load.image('redtankhead', 'assets/redtankhead.png');
-      game.load.image('browntankhead', 'assets/browntankhead.png');
-      game.load.image('browntankbody', 'assets/browntankbody.png');
-      game.load.image('graytankbody', 'assets/graytankbody.png');
-      game.load.image('graytankhead', 'assets/graytankhead.png');
-      game.load.image('horizontal_border', 'assets/horizontal_border.png');
-      game.load.image('vertical_border', 'assets/vertical_border.png');
-      game.load.image('next-mission-bg', 'assets/mission-progress-bg.png')
-      game.load.image('wood', 'assets/wood.jpg');
-      game.load.image('wall1', 'assets/wall1.png');
-      game.load.image('bullet_slow', 'assets/bullet_slow.png');
-      layout = getLayout(level);
-  }
+  var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, 'game');
+  game.state.add("game-title", titleState);
+  game.state.add("play-state", playState);
+  game.state.add("next-mission", nextMission);
+  game.state.add("level-up", levelUp);
+  game.state.start("game-title");
 
-  function create() {
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-    game.add.sprite(0, 0, 'wood');
-
-    player = new Player(game, layout.playerConfig.x, layout.playerConfig.y);
-    player.head.angle = layout.playerConfig.angle;
-    bullets = createBulletGroup();
-    walls = createWallGroup();
-    tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
-    tanks.add(player.heart);
-
-    enactLayout(layout);
-
-    for (var i = 0; i < layout.brownTanks.length; i++) {
-      var brownTank = new BrownTank(game, layout.brownTanks[i].x, layout.brownTanks[i].y);
-      brownTank.head.angle = layout.brownTanks[i].angle;
-      tanks.add(brownTank.body);
-      enemies.push(brownTank);
-    }
-
-    for (var i = 0; i < layout.grayTanks.length; i++) {
-      var grayTank = new GrayTank (game, layout.grayTanks[i].x, layout.grayTanks[i].y);
-      grayTank.head.angle = layout.grayTanks[i].angle;
-      tanks.add(grayTank.heart);
-      enemies.push(grayTank);
-    }
-
-    game.input.onDown.add(function () {
-      if (player.numBullets <= PLAYER_BULLET_LIMIT && !game.paused) {
-        var angleToMouse = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
-        var x = player.heart.x + 30 * Math.cos(angleToMouse);
-        var y = player.heart.y + 30 * Math.sin(angleToMouse);
-        fire(x, y, angleToMouse, player);
-      }
-    });
-
-    cursors = {
-      up: game.input.keyboard.addKey(Phaser.Keyboard.W),
-      down: game.input.keyboard.addKey(Phaser.Keyboard.S),
-      left: game.input.keyboard.addKey(Phaser.Keyboard.A),
-      right: game.input.keyboard.addKey(Phaser.Keyboard.D)
-    }
-
-    enemies.forEach(function (enemy) { enemy.patrol(); });
-
-    game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
-      enemies.forEach(function (enemy) { enemy.act(); enemy.move(); });
-    }, this);
-
-    // IN CASE ACT IS TOO OFTEN
-    /*game.time.events.loop(Phaser.Timer.SECOND, function () {
-      enemies.forEach(function (enemy) { enemy.move(); });
-    })*/
-    
-    game.time.advancedTiming = true;
-  }
-
-  function update() {
-    game.debug.text(game.time.fps, 2, 14, "#00ff00");
-    if (stage == "PLAY") {
-      game.physics.arcade.collide(tanks, walls);
-      game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
-      game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
-      game.physics.arcade.collide(tanks, bullets, destroyTank, null, this);
-      player.head.rotation = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
-      player.handleMovement();
-    }
-  }
-
+  
   function gameOver () {
     game.paused = true;
     game.add.text(GAME_WIDTH/2, 100, "GAME OVER", {size: "32px", fille: "#FFF", align: "center"});
@@ -146,7 +70,8 @@
 
   function switchState () {
     game.paused = false;
-    game.state.start(game.state.current);
+    if (level % 2 == 0) game.state.start("level-up");
+    else game.state.start("next-mission");
   }
 
   function destroyTank (a, b) {

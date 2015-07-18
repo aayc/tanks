@@ -19,7 +19,7 @@ function BrownTank (game, x, y) {
 	this.patrol = function () {
 		if (this.dead) return;
 
-		rotateTo(this.head, this.goalRot).onComplete.add(function () {
+		rotateTo(this.head, this.goalRot, 800).onComplete.add(function () {
 			this.dir *= -1;
 			this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
 			this.goalRot = getRadTo(player.heart.x, player.heart.y, this.body.x, this.body.y) + this.dir;
@@ -58,20 +58,25 @@ function GrayTank (game, x, y) {
 	this.goalRot = 0;
 	this.numBullets = 0;
 	this.maxBullets = 1;
-	this.states = ["BOLD", "GUERILLA", "RETREAT", "CAUTIOUS"];
-	this.currentState = "CAUTIOUS";
 	this.seePlayer = false;
+	this.direction = getRandomRotation();
 
 	this.patrol = function () {
 		if (this.dead) return;
 
-		rotateTo(this.head, this.goalRot).onComplete.add(function () {
-
-			this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
+		if (this.seePlayer) {
 			this.goalRot = getRadTo(player.heart.x, player.heart.y, this.heart.x, this.heart.y);
-			this.patrol();
-			this.count++;
-		}, this);
+			rotateTo(this.head, this.goalRot, 400).onComplete.add(function () {
+				this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
+				this.patrol();
+			}, this);
+		}
+		else {
+			rotateTo(this.head, getRandomRotation(), 800).onComplete.add(function () {
+				this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
+				this.patrol();
+			}, this);
+		}
 	}
 
 	this.act = function () {
@@ -83,33 +88,33 @@ function GrayTank (game, x, y) {
 	this.move = function () {
 		var rayToPlayer = new Phaser.Line(this.heart.x, this.heart.y, player.heart.x, player.heart.y);
 		var intersect = getWallIntersection(rayToPlayer);
-		seePlayer = (intersect == null);
-		if (this.currentState == "CAUTIOUS") {
-			if (seePlayer) {
-				this.heart.body.velocity.x = 0;
-				this.heart.body.velocity.y = 0;
-				return;
+		this.seePlayer = (intersect == null);
+		if (this.seePlayer) {
+			this.heart.body.velocity.x = 0;
+			this.heart.body.velocity.y = 0;
+			return;
+		}
+		else {
+			this.heart.body.velocity.x = 0.4 * MOVEMENT_SPEED * Math.cos(this.direction);
+			this.heart.body.velocity.y = 0.4 * MOVEMENT_SPEED * Math.sin(this.direction);
+			var rayForward = new Phaser.Line(this.heart.x, this.heart.y, Math.cos(this.direction) * 500 + x, Math.sin(this.direction) * 500 + y);
+			var wallIntersect = getWallIntersection(rayForward);
+
+			var distance = 0;
+			if (wallIntersect != null) distance = game.math.distance(this.heart.x, this.heart.y, wallIntersect.x, wallIntersect.y);
+
+			if (distance < 200 || Math.random() < 0.2) {
+				// Explore
+				this.direction = getRandomRotation();
+				dualRotateTo(this.body, this.direction, 100).onComplete.add(function () {
+					this.heart.body.velocity.x = 0.4 * MOVEMENT_SPEED * Math.cos(this.direction);
+					this.heart.body.velocity.y = 0.4 * MOVEMENT_SPEED * Math.sin(this.direction);
+				}, this);
 			}
-			else {
-				var rayForward = new Phaser.Line(this.heart.x, this.heart.y, Math.cos(this.body.rotation) * 500 + x, Math.sin(this.body.rotation) * 500 + y);
-				var wallIntersect = getWallIntersection(rayForward);
-				var distance = 0;
-				if (wallIntersect != null) {
-					distance = game.math.distance(this.heart.x, this.heart.y, wallIntersect.x, wallIntersect.y);
-				}
-				if (distance < 100) {
-					// Explore
-					this.body.rotation = Math.random () * (2 * Math.PI) - Math.PI;
-					this.heart.body.velocity.x = 0;
-					this.heart.body.velocity.y = 0;
-				}
-					// Continue going forward.
-					this.heart.body.velocity.x = 0.8 * MOVEMENT_SPEED * Math.cos(this.body.rotation);
-					this.heart.body.velocity.y = 0.8 * MOVEMENT_SPEED * Math.sin(this.body.rotation);
-				
-			}
+			
 		}
 	}
+	
 
 	this.die = function () { 
 		this.head.kill();

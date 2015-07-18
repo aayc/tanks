@@ -2,6 +2,10 @@ function getRadTo (x1, y1, x2, y2) {
 	return Math.atan2(y1 - y2, x1 - x2);
 }
 
+function getRandomRotation () {
+	return Math.random () * (2 * Math.PI) - Math.PI;
+}
+
 function shouldFire (x, y, rotation, numBouncesLeft) {
 	var ray = new Phaser.Line(x, y, Math.cos(rotation) * 5000 + x, Math.sin(rotation) * 5000 + y);
 	var playerIntersect = getPlayerIntersect(ray);
@@ -28,7 +32,7 @@ function shouldFire (x, y, rotation, numBouncesLeft) {
 	}
 }
 
-function dualRotateTo (sprite, tar_dir) {
+function dualRotateTo (sprite, tar_dir, delay) {
 	var cur_dir = sprite.rotation;
 	var clockWise = Math.abs(tar_dir - cur_dir);
 	var counterClock = 2 * Math.PI - clockWise;
@@ -38,17 +42,16 @@ function dualRotateTo (sprite, tar_dir) {
 	var oppClock = Math.abs(opp_dir - cur_dir);
 	var oppCounter = 2 * Math.PI - oppClock;
 
-	console.log("DUAL " + clockWise + " " + counterClock + " " + oppClock + " " + oppCounter);
 	var min = Math.min(Math.min(Math.min(clockWise, counterClock), oppClock), oppCounter);
-	if (min == clockWise || min == counterClock) return createTweenToRotation(sprite, cur_dir, tar_dir, clockWise, counterClock, 400);
-	else return createTweenToRotation(sprite, cur_dir, opp_dir, oppClock, oppCounter, 400);
+	if (min == clockWise || min == counterClock) return createTweenToRotation(sprite, cur_dir, tar_dir, clockWise, counterClock, delay);
+	else return createTweenToRotation(sprite, cur_dir, opp_dir, oppClock, oppCounter, delay);
 }
 
-function rotateTo(sprite, tar_dir) {
+function rotateTo(sprite, tar_dir, delay) {
 	var cur_dir = sprite.rotation;
 	var clockWise = Math.abs(tar_dir - cur_dir);
 	var counterClock = 2 * Math.PI - clockWise;
-	return createTweenToRotation(sprite, cur_dir, tar_dir, clockWise, counterClock, 800);
+	return createTweenToRotation(sprite, cur_dir, tar_dir, clockWise, counterClock, delay);
 }
 
 function createTweenToRotation (sprite, cur_dir, tar_dir, clock, counterClock, timeFactor) {
@@ -63,48 +66,6 @@ function createTweenToRotation (sprite, cur_dir, tar_dir, clock, counterClock, t
 	var tween = game.add.tween(sprite).to({rotation: sign + rot}, time).start();
 	return tween;
 }
-
-/*function rotateTo(sprite, tar_dir) {
-	var cur_dir = sprite.rotation;
-	var clockWise = Math.abs(tar_dir - cur_dir);
-	var counterClock = 2 * Math.PI - clockWise;
-	var rot = Math.min(clockWise, counterClock);
-	if (clockWise > Math.PI) {
-		tar_dir += (tar_dir < cur_dir) ? 2 * Math.PI : -2 * Math.PI;
-	}
-	var sign = (tar_dir > cur_dir) ? "+" : "-";
-	time = rot * 800;
-	if (time < 10) time = 10;
-
-	var tween = game.add.tween(sprite).to({rotation: sign + rot}, time).start();
-	return tween;
-}
-
-function dualRotateTo( cur_dir, tar_dir , inc)
-{	
-	var clockWise = Math.abs(tar_dir - cur_dir);
-	var counterClock = 2 * Math.PI - clockWise;
-
-	var opp_dir = Math.PI - Math.abs(tar_dir);
-	if (tar_dir > 0) opp_dir *= -1;
-	var oppClock = Math.abs(opp_dir - cur_dir);
-	var oppCounter = 2 * Math.PI - oppClock;
-
-	var min = Math.min(Math.min(Math.min(clockWise, counterClock), oppClock), oppCounter);
-	if (min == oppClock || min == oppCounter) tar_dir = opp_dir; 
-
-	if ( Math.abs( tar_dir - cur_dir) <= inc || Math.abs( tar_dir - cur_dir) >= (2 * Math.PI - inc)) { return tar_dir; }
-	else
-	{
-		if ( Math.abs( tar_dir - cur_dir) > Math.PI) {
-			if (tar_dir < cur_dir) tar_dir += 2 * Math.PI;
-			else tar_dir -= 2 * Math.PI;
-		}
-		if ( tar_dir > cur_dir) cur_dir += inc;
-		else if ( tar_dir < cur_dir) cur_dir -= inc;
-	}
-	return cur_dir;
-}*/
 
 function getPlayerIntersect (ray) {
 	var maxDistance = Number.POSITIVE_INFINITY;
