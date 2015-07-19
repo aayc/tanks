@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aaron's Collection of Things</title>
     <link rel="stylesheet" href="/css/foundation.css" />
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="/js/vendor/modernizr.js"></script>
+    <script src="/js/foundation.min.js"></script>
+    <script src="/eureca.js"></script>
+    
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="play-state.js"></script>
     <script type="text/javascript" src="next-mission-state.js"></script>
+    <script type="text/javascript" src="multiplayer-setup.js"></script>
     <script type="text/javascript" src="title-state.js"></script>
     <script type="text/javascript" src="level-up.js"></script>
     <script type="text/javascript" src="mechanics-commons.js"></script>
@@ -19,40 +24,26 @@
     <script type="text/javascript" src="level-manager.js"></script>
   </head>
   <body>
-
-    <nav class="top-bar" data-topbar role="navigation">
-      <ul class="title-area">
-        <li class="name">
-          <h1><a href="#"></a></h1>
-        </li>
-        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-      </ul>
-
-      <section class="top-bar-section">
-
-        <ul class="left">180/
-          <li class="active"><a href="index.html">Home</a></li>
-        </ul>
-      </section>
-    </nav>
+    <div id="hidden"></div>
+    
   
   <script type="text/javascript">
 
-  var cursors;
-  var player;
-  var bullets;
-  var walls;
-  var tanks;
-  var enemies = [];
-  var layout;
-  var level = 5;
+  var level = 1;
   var skillPts = 0;
-  var stage = "PLAY";
+
+  var isMultiplayer = false;
+  var client;
+  var clientId;
+  var clientType;
+  var server;
+
 
   var game = new Phaser.Game(GAME_WIDTH, GAME_HEIGHT, Phaser.AUTO, 'game');
   game.state.add("game-title", titleState);
   game.state.add("play-state", playState);
   game.state.add("next-mission", nextMission);
+  game.state.add('multiplayer-lobby', multiplayerLobby);
   game.state.add("level-up", levelUp);
   game.state.start("game-title");
 
@@ -63,6 +54,7 @@
   }
 
   function win () {
+    players = [];
     game.paused = true;
     game.add.text(GAME_WIDTH/2, 100, "YOU WIN", {size: "32px", fille: "#FFF", align: "center"});
     level++;

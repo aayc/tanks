@@ -1,0 +1,23 @@
+Brown Tank
+	- No movement
+	- Patrols with +/- direction buffer
+
+Gray Tank
+	- Moderate speed
+	- Intense tracking
+	- Random movement
+
+Teal Tank
+	- Slow speed
+	- Slow reload
+	- Shoots fast bullets
+	- Simple State machine:
+	- PATHFIND (Establish waypoints)
+		TRAVERSE (Follow waypoints)
+			10% chance to RETREAT state
+			Upon seeing player:
+
+			COMBAT state
+			- Intense tracking
+			- Bullet dodge
+			- If player retreats, then PATHFIND.

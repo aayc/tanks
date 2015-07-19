@@ -14,12 +14,17 @@ function BrownTank (game, x, y) {
 	this.goalRot = 0;
 	this.numBullets = 0;
 	this.maxBullets = 1;
+	this.rotDelay = 800;
 	this.dead = false;
+
+	this.multiplayerIx = -1;
 
 	this.patrol = function () {
 		if (this.dead) return;
 
-		rotateTo(this.head, this.goalRot, 800).onComplete.add(function () {
+		if (isMultiplayer) serverUpdateTankRotation (this.multiplayerIx);
+
+		rotateTo(this.head, this.goalRot, this.rotDelay).onComplete.add(function () {
 			this.dir *= -1;
 			this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
 			this.goalRot = getRadTo(player.heart.x, player.heart.y, this.body.x, this.body.y) + this.dir;
@@ -29,7 +34,14 @@ function BrownTank (game, x, y) {
 
 	this.act = function () {
 		if (shouldFire(this.body.x, this.body.y, this.head.rotation, 1) && this.numBullets < this.maxBullets) {
-			fire(this.body.x, this.body.y, this.head.rotation, this, SLOW_BULLET_SPEED, 1);
+			var params = {
+				x: this.body.x,
+				y: this.body.y,
+				rot: this.head.rotation,
+				numBounces: 1,
+				speed: SLOW_BULLET_SPEED
+			}
+			fire(params, this, true);
 		}
 	}
 
@@ -66,28 +78,34 @@ function GrayTank (game, x, y) {
 	this.bulletDelayRequirement = 10;
 	this.body.rotation = this.direction;
 
+	this.multiplayerIx = -1;
+
 	this.patrol = function () {
 		if (this.dead) return;
 
-		if (this.seePlayer) {
-			this.goalRot = getRadTo(player.heart.x, player.heart.y, this.heart.x, this.heart.y);
-			rotateTo(this.head, this.goalRot, this.rotDelay).onComplete.add(function () {
-				this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
-				this.patrol();
-			}, this);
-		}
-		else {
-			rotateTo(this.head, getRandomRotation(), this.rotDelay).onComplete.add(function () {
-				this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
-				this.patrol();
-			}, this);
-		}
+		if (this.seePlayer) this.goalRot = getRadTo(player.heart.x, player.heart.y, this.heart.x, this.heart.y);
+		else this.goalRot = getRandomRotation();
+
+		if (isMultiplayer) serverUpdateTankRotation (this.multiplayerIx);
+
+		rotateTo(this.head, this.goalRot, this.rotDelay).onComplete.add(function () {
+			this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
+			this.patrol();
+		}, this);
 	}
 
 	this.act = function () {
 		this.bulletDelay += 1;
-		if (this.numBullets < this.maxBullets && this.bulletDelay > this.bulletDelayRequirement && shouldFire(this.heart.x, this.heart.y, this.head.rotation, 1)) {
-			fire(this.heart.x, this.heart.y, this.head.rotation, this, SLOW_BULLET_SPEED, 1);
+		if (this.numBullets < this.maxBullets && this.bulletDelay > this.bulletDelayRequirement && 
+			shouldFire(this.heart.x, this.heart.y, this.head.rotation, 1)) {
+			var params = {
+				x: this.heart.x,
+				y: this.heart.y,
+				rot: this.head.rotation,
+				numBounces: 1,
+				speed: SLOW_BULLET_SPEED
+			}
+			fire(params, this, true);
 			this.bulletDelay = 0;
 		}
 	}
@@ -152,25 +170,26 @@ function TealTank (game, x, y) {
 	this.patrol = function () {
 		if (this.dead) return;
 
-		if (this.seePlayer) {
-			this.goalRot = getRadTo(player.heart.x, player.heart.y, this.heart.x, this.heart.y);
-			rotateTo(this.head, this.goalRot, this.rotDelay).onComplete.add(function () {
-				this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
-				this.patrol();
-			}, this);
-		}
-		else {
-			rotateTo(this.head, getRandomRotation(), this.rotDelay).onComplete.add(function () {
-				this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
-				this.patrol();
-			}, this);
-		}
+		if (this.seePlayer) this.goalRot = getRadTo(player.heart.x, player.heart.y, this.heart.x, this.heart.y);
+		else this.goalRot = getRandomRotation();
+
+		rotateTo(this.head, this.goalRot, this.rotDelay).onComplete.add(function () {
+			this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
+			this.patrol();
+		}, this);
 	}
 
 	this.act = function () {
 		this.bulletDelay += 1;
 		if (this.numBullets < this.maxBullets && this.bulletDelay > this.bulletDelayRequirement && shouldFire(this.heart.x, this.heart.y, this.head.rotation, 1)) {
-			fire(this.heart.x, this.heart.y, this.head.rotation, this, FAST_BULLET_SPEED, 0);
+			var params = {
+				x: this.heart.x,
+				y: this.heart.y,
+				rot: this.head.rotation,
+				numBounces: 0,
+				speed: FAST_BULLET_SPEED
+			}
+			fire(params, this, true);
 			this.bulletDelay = 0;
 		}
 	}

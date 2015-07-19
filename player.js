@@ -14,7 +14,7 @@ function Player (game, x, y) {
 	this.vy = 0;
       this.direction = 0;
 
-	this.handleMovement = function () {
+	this.handleMovement = function (cursors) {
 		// Could be a faster way that checks left, right, down, up DIRECTLy and then can short break out early.
 		var newVx = 0;
 		var newVy = 0;

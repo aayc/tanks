@@ -4124,14 +4124,14 @@ blockquote p {
   .reveal-modal.toback {
     z-index: 1003; }
   .reveal-modal .close-reveal-modal {
-    color: #AAAAAA;
+    /*color: #AAAAAA;
     cursor: pointer;
     font-size: 2.5rem;
     font-weight: bold;
     line-height: 1;
     position: absolute;
     top: 0.625rem;
-    right: 1.375rem; }
+    right: 1.375rem; */}
 
 /* Tooltips */
 .has-tip {

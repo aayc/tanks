@@ -6,6 +6,15 @@ function getRandomRotation () {
 	return Math.random () * (2 * Math.PI) - Math.PI;
 }
 
+function serverUpdateTankRotation (ix) {
+	var tank = enemies[ix];
+	var data = {
+		ix: ix,
+		goalRot: tank.goalRot
+	};
+	server.updateTankRotation(clientId, data);
+}
+
 function shouldFire (x, y, rotation, numBouncesLeft) {
 	var ray = new Phaser.Line(x, y, Math.cos(rotation) * 500 + x, Math.sin(rotation) * 500 + y);
 	var playerIntersect = getPlayerIntersect(ray);

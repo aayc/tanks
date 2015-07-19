@@ -9,15 +9,19 @@ function createBulletGroup () {
   return group;
 }
 
-function fire (x, y, rot, owner, speed, bounces) {
+function fire (params, owner, transmit) {
   var bullet = bullets.getFirstDead();
-  bullet.reset(x, y);
-  bullet.body.velocity.x = speed * Math.cos(rot);
-  bullet.body.velocity.y = speed * Math.sin(rot);
-  bullet.rotation = rot;
-  bullet.bouncesLeft = bounces;
+  bullet.reset(params.x, params.y);
+  bullet.body.velocity.x = params.speed * Math.cos(params.rot);
+  bullet.body.velocity.y = params.speed * Math.sin(params.rot);
+  bullet.rotation = params.rot;
+  bullet.bouncesLeft = params.numBounces;
   bullet.owner = owner;
   owner.numBullets++;
+
+  if (isMultiplayer && transmit) {
+    server.updateBullet(clientId, params);
+  }
 }
 
 function bulletDie (obj) {
