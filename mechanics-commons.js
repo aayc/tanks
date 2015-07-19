@@ -8,11 +8,20 @@ function getRandomRotation () {
 
 function serverUpdateTankRotation (ix) {
 	var tank = enemies[ix];
+	if (!tank) return;
+	var data = { ix: ix, goalRot: tank.goalRot };
+	server.updateTankRotation(clientId, data);
+}
+
+function serverUpdateTankVelocity (ix) {
+	var tank = enemies[ix];
+	if (!tank) return;
 	var data = {
 		ix: ix,
-		goalRot: tank.goalRot
+		vx: tank.heart.body.velocity.x,
+		vy: tank.heart.body.velocity.y
 	};
-	server.updateTankRotation(clientId, data);
+	server.updateTankVelocity(clientId, data);
 }
 
 function shouldFire (x, y, rotation, numBouncesLeft) {
@@ -80,25 +89,29 @@ function getPlayerIntersect (ray) {
 	var maxDistance = Number.POSITIVE_INFINITY;
 	var closestIntersection = null;
 
-	var left = player.heart.x - player.body.width * 0.5;
-	var right = player.heart.x + player.body.width * 0.5;
-	var top = player.heart.y - player.body.height * 0.5;
-	var bottom = player.heart.y + player.body.height * 0.5;
+	for (var i = 0; i < players.length; i++) {
+		var p = players[i];
+		var left = p.heart.x - p.body.width * 0.5;
+		var right = p.heart.x + p.body.width * 0.5;
+		var top = p.heart.y - p.body.height * 0.5;
+		var bottom = p.heart.y + p.body.height * 0.5;
 
-	var lines = [
-		new Phaser.Line (left, top, left, bottom),
-		new Phaser.Line (left, top, right, top),
-		new Phaser.Line (right, bottom, left, bottom),
-		new Phaser.Line (right, bottom, right, top)
-	]
 
-	for (var i = 0; i < lines.length; i++) {
-		var intersect = Phaser.Line.intersects(ray, lines[i]);
-		if (intersect) { 
-			distance = this.game.math.distance(ray.start.x, ray.start.y, intersect.x, intersect.y);
-			if (distance < maxDistance)  {
-				maxDistance = distance;
-				closestIntersection = intersect;
+		var lines = [
+			new Phaser.Line (left, top, left, bottom),
+			new Phaser.Line (left, top, right, top),
+			new Phaser.Line (right, bottom, left, bottom),
+			new Phaser.Line (right, bottom, right, top)
+		]
+
+		for (var i = 0; i < lines.length; i++) {
+			var intersect = Phaser.Line.intersects(ray, lines[i]);
+			if (intersect) { 
+				distance = this.game.math.distance(ray.start.x, ray.start.y, intersect.x, intersect.y);
+				if (distance < maxDistance)  {
+					maxDistance = distance;
+					closestIntersection = intersect;
+				}
 			}
 		}
 	}
@@ -142,10 +155,10 @@ function getWallIntersection (ray) {
 }
 
 function destroyTank (a, b) {
-    bulletDie(b);
-    if (a.parentFcn.gameObjType == "PLAYER") {}
-    else destroyEnemy(a.parentFcn);
-  }
+	bulletDie(b);
+	if (a.parentFcn.gameObjType == "PLAYER") {}
+	else destroyEnemy(a.parentFcn);
+}
 
 function destroyEnemy (enemy) {
  for (var i = 0; i < enemies.length; i++) {
@@ -155,6 +168,10 @@ function destroyEnemy (enemy) {
      break;
    }
  }
-
  if (enemies.length == 0) win();
+}
+
+function destroyAllEnemies () {
+	for (var i = 0; i < enemies.length; i++) enemies[i].die();
+	enemies = [];
 }

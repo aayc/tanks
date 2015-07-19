@@ -3,7 +3,8 @@ var express = require('express')
   , server = require('http').createServer(app);
  
 var EurecaServer = require('eureca.io').EurecaServer;
-var eurecaServer = new EurecaServer({allow:['setId', 'startCampaign', 'unmultiplayer', 'updatePlayer', 'updateBullet', 'updateTankRotation']});
+var eurecaServer = new EurecaServer({allow:['setId', 'startCampaign', 'unmultiplayer', 'updatePlayer', 'updateBullet', 
+												'updateTankRotation', 'updateTankVelocity', 'winCondition', 'nextMission']});
  
 app.use(express.static(__dirname));
  
@@ -15,6 +16,7 @@ eurecaServer.attach(server);
 
 eurecaServer.onConnect(function (conn) {    
     var remote = eurecaServer.getClient(conn.id);
+    console.log("newe client");
     waiting[conn.id] = {id: conn.id, remote: remote};
     remote.setId(conn.id);
 });
@@ -27,6 +29,7 @@ eurecaServer.exports.registerCampaignCode = function (code) {
 		if (games[i].code == code && !games[i].inGame) {
 			games[i].coplayer = waiting[conn.id];
 			games[i].inGame = true;
+			games[i].playing = true;
 			games[i].host.remote.startCampaign("HOST");
 			games[i].coplayer.remote.startCampaign("DUMB");
 
@@ -75,6 +78,40 @@ eurecaServer.exports.updateTankRotation = function (id, data) {
 	});
 }
 
+eurecaServer.exports.updateTankVelocity = function (id, data) {
+	findPlayer(id, function (player) {
+		player.remote.updateTankVelocity(data);
+	});
+}
+
+eurecaServer.exports.sendWinCondition = function (id) {
+	for (var i = 0; i < games.length; i++) {
+		if (games[i].coplayer.id == id) {
+			games[i].playing = false;
+			games[i].host.remote.winCondition();
+			break;
+		}
+		else if (games[i].host.id == id) {
+			games[i].playing = false;
+			games[i].coplayer.remote.winCondition();
+			break;
+		}
+	}
+}
+
+eurecaServer.exports.readyForNextMission = function (id) {
+	for (var i = 0; i < games.length; i++) {
+		if (games[i].coplayer.id == id || games[i].host.id == id) {
+			if (games[i].playing) {
+				games[i].coplayer.remote.nextMission();
+				games[i].host.remote.nextMission();
+			}
+			else games[i].playing = true;
+			break;
+		}
+	}
+}
+
 function findPlayer(id, fcn) {
 	for (var i = 0; i < games.length; i++) {
 		if (games[i].coplayer.id == id) {
@@ -90,6 +127,7 @@ function findPlayer(id, fcn) {
  
 //detect client disconnection
 eurecaServer.onDisconnect(function (conn) {
+	console.log("client out");
 	for (var i = 0; i < games.length; i++) {
 		if (games[i].coplayer.id == conn.id) {
 			games[i].host.remote.unmultiplayer();

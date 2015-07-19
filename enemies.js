@@ -127,9 +127,12 @@ function GrayTank (game, x, y) {
 			this.direction = getRandomRotation();
 			this.heart.body.velocity.x = 0;
 			this.heart.body.velocity.y = 0;
+			if (isMultiplayer) serverUpdateTankVelocity(this.multiplayerIx);
+
 			dualRotateTo(this.body, this.direction, this.rotDelay).onComplete.add(function () {
 				this.heart.body.velocity.x = this.movSpeed * Math.cos(this.direction);
 				this.heart.body.velocity.y = this.movSpeed * Math.sin(this.direction);
+				if (isMultiplayer) serverUpdateTankVelocity(this.multiplayerIx);
 			}, this);
 		}
 	}

@@ -19,6 +19,10 @@ nextMission.prototype = {
 	},
 
 	startNextMission: function () {
-		game.state.start("play-state");
+		if (isMultiplayer) {
+			server.readyForNextMission(clientId);
+			game.add.text(250, 300, "Waiting for other player...", {size: "48px", fille: "#FFF", align: "center"});
+		}
+		else game.state.start("play-state");
 	}
 }

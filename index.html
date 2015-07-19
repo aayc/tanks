@@ -29,7 +29,7 @@
   
   <script type="text/javascript">
 
-  var level = 1;
+  var level = 3;
   var skillPts = 0;
 
   var isMultiplayer = false;
@@ -54,14 +54,17 @@
   }
 
   function win () {
-    players = [];
     game.paused = true;
     game.add.text(GAME_WIDTH/2, 100, "YOU WIN", {size: "32px", fille: "#FFF", align: "center"});
     level++;
+
+    if (isMultiplayer) server.sendWinCondition(clientId);
+    
     setTimeout(switchState, 1500);
   }
 
   function switchState () {
+    players = [];
     game.paused = false;
     if (level % 2 == 0) {
       skillPts++;

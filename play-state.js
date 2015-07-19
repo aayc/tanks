@@ -28,12 +28,14 @@ function preload() {
     game.load.image('wood', 'assets/wood.jpg');
     game.load.image('wall1', 'assets/wall1.png');
     game.load.image('bullet_slow', 'assets/bullet_slow.png');
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
     this.layout = getLayout(level);
   }
 
 function create() {
-  game.physics.startSystem(Phaser.Physics.ARCADE);
   game.add.sprite(0, 0, 'wood');
+  
 
   bullets = createBulletGroup();
   walls = createWallGroup();

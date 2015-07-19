@@ -53,8 +53,6 @@ function clientSetup () {
 		server = proxy;
 		clientConnected = true;
 		game.stage.disableVisibilityChange = true;
-		//we temporary put create function here so we make sure to launch the game once the client is ready
-		
 	});
 
 	client.exports.setId = function (id) {
@@ -70,6 +68,7 @@ function clientSetup () {
 
 	client.exports.updatePlayer = function (data) {
 		var p = (clientType == "HOST") ? players[1] : players[0];
+		if (game.paused) return;
 		
 		p.heart.x = data.x;
 		p.heart.y = data.y;
@@ -85,6 +84,23 @@ function clientSetup () {
 	client.exports.updateTankRotation = function (data) {
 		var tank = enemies[data.ix];
 		rotateTo(tank.head, data.goalRot, tank.rotDelay);
+	}
+
+	client.exports.updateTankVelocity = function (data) {
+		var tank = enemies[data.ix];
+		console.log(tank);
+		tank.heart.body.velocity.x = data.vx;
+		tank.heart.body.velocity.y = data.vy;
+	}
+
+	client.exports.nextMission = function () {
+		game.state.start("play-state");
+	}
+
+	client.exports.winCondition = function () {
+		console.log("WIN CONDITION");
+		destroyAllEnemies();
+		if (!game.paused) win();
 	}
 
 	client.exports.unmultiplayer = function () {
