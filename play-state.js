@@ -39,7 +39,8 @@ function preload() {
     }
     this.layout = getLayout(level);
 
-    server.readyToStart(clientId);
+    if (isMultiplayer) server.readyToStart(clientId);
+    else ready = true;
   }
 
 function create() {
