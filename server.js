@@ -4,7 +4,7 @@ var express = require('express')
  
 var EurecaServer = require('eureca.io').EurecaServer;
 var eurecaServer = new EurecaServer({allow:['setId', 'startCampaign', 'unmultiplayer', 'updatePlayer', 'updateBullet', 
-												'updateTankRotation', 'updateTankVelocity', 'winCondition', 'nextMission']});
+												'updateTankRotation', 'updateTankVelocity', 'winCondition', 'nextMission', 'destroyEnemy']});
  
 app.use(express.static(__dirname));
  
@@ -82,6 +82,16 @@ eurecaServer.exports.updateTankVelocity = function (id, data) {
 	findPlayer(id, function (player) {
 		player.remote.updateTankVelocity(data);
 	});
+}
+
+eurecaServer.exports.destroyEnemy = function (id, data) {
+	for (var i = 0; i < games.length; i++) {
+		if (games[i].coplayer.id == id || games[i].host.id == id) {
+			games[i].coplayer.remote.destroyEnemy(data);
+			games[i].host.remote.destroyEnemy(data);
+		}
+		break;
+	}
 }
 
 eurecaServer.exports.sendWinCondition = function (id) {

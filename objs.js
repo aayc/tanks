@@ -20,6 +20,8 @@ function fire (params, owner, transmit) {
   owner.numBullets++;
 
   if (isMultiplayer && transmit) {
+    params.objType = owner.gameObjType;
+    if (params.objType != "PLAYER") params.ix = owner.multiplayerIx;
     server.updateBullet(clientId, params);
   }
 }
@@ -42,6 +44,20 @@ function bulletWallCollide (b, w) {
     b.owner.numBullets -= 1;
   }
   else b.bouncesLeft--;
+}
+
+function destroyTank (a, b) {
+  bulletDie(b);
+  if (a.parentFcn.gameObjType == "PLAYER") {}
+  else {
+    for (var id in enemies) {
+      if (id == a.parentFcn.multiplayerIx) {
+        if (isMultiplayer) server.destroyEnemy(clientId, id);
+        else destroyEnemyAt(id);
+        break;
+      }
+    }
+  }
 }
 
 // ----------------- WALL ----------------------- //

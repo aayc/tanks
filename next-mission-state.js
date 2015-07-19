@@ -6,7 +6,6 @@ nextMission.prototype = {
 		game.load.image('play-button', 'assets/play-button.png');
 	},
 
-
 	create: function () {
 		game.stage.backgroundColor = 0xFFFFFF;
 		game.add.text(GAME_WIDTH/3, 100, "Mission " + level, {size: "48px", fille: "#FFF", align: "center"});

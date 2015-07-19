@@ -199,27 +199,32 @@ function enactLayout (layout) {
 		}
 	}
 
+	var count = 0;
+
 	for (var i = 0; i < layout.brownTanks.length; i++) {
 		var brownTank = new BrownTank(game, layout.brownTanks[i].x, layout.brownTanks[i].y);
 		brownTank.head.angle = layout.brownTanks[i].angle;
-		brownTank.multiplayerIx = enemies.length;
+		brownTank.multiplayerIx = count;
 		tanks.add(brownTank.body);
-		enemies.push(brownTank);
+		enemies[count] = brownTank;
+		count++;
 	}
 
 	for (var i = 0; i < layout.grayTanks.length; i++) {
 		var grayTank = new GrayTank (game, layout.grayTanks[i].x, layout.grayTanks[i].y);
 		grayTank.head.angle = layout.grayTanks[i].angle;
-		grayTank.multiplayerIx = enemies.length;
+		grayTank.multiplayerIx = count;
 		tanks.add(grayTank.heart);
-		enemies.push(grayTank);
+		enemies[count] = grayTank;
+		count++;
 	}
 
 	for (var i = 0; i < layout.tealTanks.length; i++) {
 		var tealTank = new TealTank (game, layout.tealTanks[i].x, layout.tealTanks[i].y);
 		tealTank.head.angle = layout.tealTanks[i].angle;
-		tealTank.multiplayerIx = enemies.length;
+		tealTank.multiplayerIx = count;
 		tanks.add(tealTank.heart);
-		enemies.push(tealTank);
+		enemies[count] = tealTank;
+		count++;
 	}
 }

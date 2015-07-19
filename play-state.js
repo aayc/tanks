@@ -3,7 +3,7 @@ var walls;
 var tanks;
 var players = [];
 var player;
-var enemies = [];
+var enemies = {};
 var playState = function (game) {
 }
 
@@ -30,13 +30,18 @@ function preload() {
     game.load.image('bullet_slow', 'assets/bullet_slow.png');
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    this.cursors = {
+      up: game.input.keyboard.addKey(Phaser.Keyboard.W),
+      down: game.input.keyboard.addKey(Phaser.Keyboard.S),
+      left: game.input.keyboard.addKey(Phaser.Keyboard.A),
+      right: game.input.keyboard.addKey(Phaser.Keyboard.D)
+    }
     this.layout = getLayout(level);
   }
 
 function create() {
   game.add.sprite(0, 0, 'wood');
   
-
   bullets = createBulletGroup();
   walls = createWallGroup();
   tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
@@ -50,7 +55,6 @@ function create() {
   }
 
   player = (!isMultiplayer || clientType == "HOST") ? players[0] : players[1];
-  console.log(player);
 
   game.input.onDown.add(function () {
     if (player.numBullets <= PLAYER_BULLET_LIMIT && !game.paused) {
@@ -67,18 +71,18 @@ function create() {
     }
   });
 
-  this.cursors = {
-    up: game.input.keyboard.addKey(Phaser.Keyboard.W),
-    down: game.input.keyboard.addKey(Phaser.Keyboard.S),
-    left: game.input.keyboard.addKey(Phaser.Keyboard.A),
-    right: game.input.keyboard.addKey(Phaser.Keyboard.D)
-  }
+  
 
   if (!isMultiplayer || clientType == "HOST") {
-    enemies.forEach(function (enemy) { enemy.patrol(); });
+    for (var id in enemies) {
+       enemies[id].patrol();
+    }
 
     game.time.events.loop(Phaser.Timer.SECOND / 2, function () {
-      enemies.forEach(function (enemy) { enemy.act(); enemy.move(); });
+      for (var id in enemies) {
+        enemies[id].act();
+        enemies[id].move();
+      }
     }, this);
   }
   game.time.advancedTiming = true;

@@ -69,12 +69,10 @@ function clientSetup () {
 	client.exports.updatePlayer = function (data) {
 		var p = (clientType == "HOST") ? players[1] : players[0];
 		if (game.paused) return;
-		
 		p.heart.x = data.x;
 		p.heart.y = data.y;
 		p.head.rotation = data.rot;
 		p.body.rotation = data.bodyRot;
-
 	}
 
 	client.exports.updateBullet = function (data) {
@@ -82,15 +80,20 @@ function clientSetup () {
 	}
 
 	client.exports.updateTankRotation = function (data) {
+		if (!enemies.hasOwnProperty(data.ix)) return;
 		var tank = enemies[data.ix];
 		rotateTo(tank.head, data.goalRot, tank.rotDelay);
 	}
 
 	client.exports.updateTankVelocity = function (data) {
+		if (!enemies.hasOwnProperty(data.ix)) return;
 		var tank = enemies[data.ix];
-		console.log(tank);
 		tank.heart.body.velocity.x = data.vx;
 		tank.heart.body.velocity.y = data.vy;
+	}
+
+	client.exports.destroyEnemy = function (data) {
+		destroyEnemyAt(data);
 	}
 
 	client.exports.nextMission = function () {
@@ -98,7 +101,6 @@ function clientSetup () {
 	}
 
 	client.exports.winCondition = function () {
-		console.log("WIN CONDITION");
 		destroyAllEnemies();
 		if (!game.paused) win();
 	}

@@ -92,6 +92,7 @@ function GrayTank (game, x, y) {
 			this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
 			this.patrol();
 		}, this);
+		
 	}
 
 	this.act = function () {

@@ -7,15 +7,15 @@ function getRandomRotation () {
 }
 
 function serverUpdateTankRotation (ix) {
+	if (!enemies.hasOwnProperty(ix)) return;
 	var tank = enemies[ix];
-	if (!tank) return;
 	var data = { ix: ix, goalRot: tank.goalRot };
 	server.updateTankRotation(clientId, data);
 }
 
 function serverUpdateTankVelocity (ix) {
+	if (!enemies.hasOwnProperty(ix)) return;
 	var tank = enemies[ix];
-	if (!tank) return;
 	var data = {
 		ix: ix,
 		vx: tank.heart.body.velocity.x,
@@ -133,7 +133,7 @@ function getWallIntersection (ray) {
 			new Phaser.Line(wall.x, wall.y + wall.height,
 			wall.x + wall.width, wall.y + wall.height)
 		];
-		//console.log(lines[0].start + " and " + lines[0].end);
+
 		// Test each of the edges in this wall against the ray.
 		// If the ray intersects any of the edges then the wall must be in the way.
 		for(var i = 0; i < lines.length; i++) {
@@ -154,24 +154,14 @@ function getWallIntersection (ray) {
 	return closestIntersection;
 }
 
-function destroyTank (a, b) {
-	bulletDie(b);
-	if (a.parentFcn.gameObjType == "PLAYER") {}
-	else destroyEnemy(a.parentFcn);
-}
-
-function destroyEnemy (enemy) {
- for (var i = 0; i < enemies.length; i++) {
-   if (enemies[i] === enemy) {
-     enemy.die();
-     enemies.splice(i, 1);
-     break;
-   }
- }
- if (enemies.length == 0) win();
+function destroyEnemyAt (ix) {
+	if (!enemies.hasOwnProperty(ix)) return;
+	enemies[ix].die();
+	delete enemies[ix];
+	if (Object.keys(enemies).length == 0) win();
 }
 
 function destroyAllEnemies () {
-	for (var i = 0; i < enemies.length; i++) enemies[i].die();
-	enemies = [];
+	for (var key in enemies) enemies[key].die();
+	enemies = {};
 }
