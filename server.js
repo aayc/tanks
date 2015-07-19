@@ -4,7 +4,7 @@ var express = require('express')
  
 var EurecaServer = require('eureca.io').EurecaServer;
 var eurecaServer = new EurecaServer({allow:['setId', 'startCampaign', 'unmultiplayer', 'updatePlayer', 'updateBullet', 
-												'updateTankRotation', 'updateTankVelocity', 'winCondition', 'nextMission', 'destroyEnemy']});
+												'updateTankRotation', 'updateTankVelocity', 'winCondition', 'nextMission', 'destroyEnemy', 'readyToStart']});
  
 app.use(express.static(__dirname));
  
@@ -29,7 +29,7 @@ eurecaServer.exports.registerCampaignCode = function (code) {
 		if (games[i].code == code && !games[i].inGame) {
 			games[i].coplayer = waiting[conn.id];
 			games[i].inGame = true;
-			games[i].playing = true;
+			games[i].ready = true;
 			games[i].host.remote.startCampaign("HOST");
 			games[i].coplayer.remote.startCampaign("DUMB");
 
@@ -97,12 +97,12 @@ eurecaServer.exports.destroyEnemy = function (id, data) {
 eurecaServer.exports.sendWinCondition = function (id) {
 	for (var i = 0; i < games.length; i++) {
 		if (games[i].coplayer.id == id) {
-			games[i].playing = false;
+			games[i].ready = false;
 			games[i].host.remote.winCondition();
 			break;
 		}
 		else if (games[i].host.id == id) {
-			games[i].playing = false;
+			games[i].ready = false;
 			games[i].coplayer.remote.winCondition();
 			break;
 		}
@@ -112,11 +112,25 @@ eurecaServer.exports.sendWinCondition = function (id) {
 eurecaServer.exports.readyForNextMission = function (id) {
 	for (var i = 0; i < games.length; i++) {
 		if (games[i].coplayer.id == id || games[i].host.id == id) {
-			if (games[i].playing) {
+			if (games[i].ready) {
 				games[i].coplayer.remote.nextMission();
 				games[i].host.remote.nextMission();
+				games[i].ready = false;
 			}
-			else games[i].playing = true;
+			else games[i].ready = true;
+			break;
+		}
+	}
+}
+
+eurecaServer.exports.readyToStart = function (id) {
+	for (var i = 0; i < games.length; i++) {
+		if (games[i].coplayer.id == id || games[i].host.id == id) {
+			if (games[i].ready) {
+				games[i].coplayer.remote.readyToStart();
+				games[i].host.remote.readyToStart();
+			}
+			else games[i].ready = true;
 			break;
 		}
 	}

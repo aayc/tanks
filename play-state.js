@@ -5,6 +5,7 @@ var players = [];
 var player;
 var enemies = {};
 var playState = function (game) {
+  ready = false;
 }
 
 playState.prototype = {
@@ -37,6 +38,8 @@ function preload() {
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
     }
     this.layout = getLayout(level);
+
+    server.readyToStart(clientId);
   }
 
 function create() {
@@ -89,16 +92,18 @@ function create() {
 }
 
 function update() {
-  game.debug.text(game.time.fps, 2, 14, "#00ff00");
-  game.physics.arcade.collide(tanks, walls);
-  game.physics.arcade.collide(tanks, tanks);
-  game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
-  game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
-  game.physics.arcade.collide(tanks, bullets, destroyTank, null, this);
-  player.head.rotation = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
-  player.handleMovement(this.cursors);
+  if (ready) {
+    game.debug.text(game.time.fps, 2, 14, "#00ff00");
+    game.physics.arcade.collide(tanks, walls);
+    game.physics.arcade.collide(tanks, tanks);
+    game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);
+    game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
+    game.physics.arcade.collide(tanks, bullets, destroyTank, null, this);
+    player.head.rotation = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
+    player.handleMovement(this.cursors);
 
-  if (isMultiplayer) {
-    server.updatePlayer(clientId, {x: player.heart.x, y: player.heart.y, rot: player.head.rotation, bodyRot: player.body.rotation});
+    if (isMultiplayer) {
+      server.updatePlayer(clientId, {x: player.heart.x, y: player.heart.y, rot: player.head.rotation, bodyRot: player.body.rotation});
+    }
   }
 }

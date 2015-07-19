@@ -76,7 +76,15 @@ function clientSetup () {
 	}
 
 	client.exports.updateBullet = function (data) {
-		fire(data, player, false);
+		//UNTESTED!
+		if (data.objType == "PLAYER") {
+			// Must have not come from this player.
+			if (clientType == "HOST") fire(data, players[1], false);
+			else fire(data, players[0], false);
+		}
+		else {
+			fire(data, enemies[data.ix], false);
+		}
 	}
 
 	client.exports.updateTankRotation = function (data) {
@@ -98,6 +106,10 @@ function clientSetup () {
 
 	client.exports.nextMission = function () {
 		game.state.start("play-state");
+	}
+
+	client.exports.readyToStart = function () {
+		ready = true;
 	}
 
 	client.exports.winCondition = function () {
