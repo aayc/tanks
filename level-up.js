@@ -26,19 +26,33 @@ levelUp.prototype = {
 			change: 30,
 			cost: 1
 		}, {
-			btn: game.add.sprite(200, 280, 'stat-add'),
-			txt: game.add.text(250, 280, "Decrease Rotation Delay (current: " + PLAYER_ROTATION_SPEED + ", next: " + (PLAYER_ROTATION_SPEED - 10) + ", cost: " + 1 + ")", this.textOpts),
+			btn: game.add.sprite(200, 260, 'stat-add'),
+			txt: game.add.text(250, 260, "Decrease Rotation Delay (current: " + PLAYER_ROTATION_SPEED + ", next: " + (PLAYER_ROTATION_SPEED - 10) + ", cost: " + 1 + ")", this.textOpts),
 			txtTemplate: "Decrease Rotation Delay",
 			stat: "PLAYER_ROTATION_SPEED",
 			change: -10,
 			cost: 1
 		}, {
-			btn: game.add.sprite(200, 360, 'stat-add'),
-			txt: game.add.text(250, 360, "Add 1 bullet (current: " + PLAYER_BULLET_LIMIT + ", next: " + (PLAYER_BULLET_LIMIT + 1) + ", cost: " + 3 + ")", this.textOpts),
+			btn: game.add.sprite(200, 320, 'stat-add'),
+			txt: game.add.text(250, 320, "Add 1 bullet (current: " + PLAYER_BULLET_LIMIT + ", next: " + (PLAYER_BULLET_LIMIT + 1) + ", cost: " + 2 + ")", this.textOpts),
 			txtTemplate: "Add 1 bullet",
 			stat: "PLAYER_BULLET_LIMIT",
 			change: 1,
-			cost: 3
+			cost: 2
+		}, {
+			btn: game.add.sprite(200, 380, 'stat-add'),
+			txt: game.add.text(250, 380, "Increase Bullet Speed (current: " + PLAYER_BULLET_SPEED + ", next: " + (PLAYER_BULLET_SPEED + 30) + ", cost: " + 2 + ")", this.textOpts),
+			txtTemplate: "Increase Bullet Speed",
+			stat: "PLAYER_BULLET_SPEED",
+			change: 30,
+			cost: 2
+		}, {
+			btn: game.add.sprite(200, 440, 'stat-add'),
+			txt: game.add.text(250, 440, "Add 1 life (current: " + PLAYER_LIVES + ", next: " + (PLAYER_LIVES + 1) + ", cost: " + 1 + ")", this.textOpts),
+			txtTemplate: "Add 1 life",
+			stat: "PLAYER_LIVES",
+			change: 1,
+			cost: 1
 		}];
 
 		for (var i = 0; i < this.adds.length; i++) {

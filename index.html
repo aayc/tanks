@@ -30,7 +30,7 @@
   
   <script type="text/javascript">
 
-  var level = 7;
+  var level = 1;
   var skillPts = 6;
   var ready = false;
 
@@ -53,11 +53,18 @@
   
   function gameOver () {
     game.paused = true;
-    restoreConfig();
     game.add.text(GAME_WIDTH/2, 100, "GAME OVER", {size: "32px", fille: "#FFF", align: "center"});
-    level = 1;
-    skillPts = 0;
-    setTimeout(restart, 1500)
+    
+    if (PLAYER_LIVES > 1) {
+      PLAYER_LIVES -= 1;
+      setTimeout(restartLevel, 1500);
+    }
+    else {
+      level = 1;
+      skillPts = 0;
+      restoreConfig();
+      setTimeout(restart, 1500);
+    }
   }
 
   function win () {
@@ -69,6 +76,12 @@
     
     setTimeout(nextLevel, 1500);
   }
+
+  function restartLevel () {
+    players = [];
+    game.paused = false;
+    game.state.start("next-mission");
+  }da
 
   function restart () {
     game.paused = false;

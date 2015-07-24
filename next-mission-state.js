@@ -9,7 +9,8 @@ nextMission.prototype = {
 	create: function () {
 		game.stage.backgroundColor = 0xFFFFFF;
 		game.add.text(GAME_WIDTH/3, 100, "Mission " + level, {size: "48px", fille: "#FFF", align: "center"});
-		var playButton = game.add.button(250, 200, 'play-button', this.startNextMission, this);
+		game.add.text(GAME_WIDTH/3, 150, "Lives left: " + PLAYER_LIVES, {size: "48px", fille: "#FFF", align: "center"});
+		var playButton = game.add.button(250, 300, 'play-button', this.startNextMission, this);
 		game.time.advancedTiming = true;
 	},
 

@@ -78,7 +78,7 @@ function createWallGroup () {
   group.add(borderBottom);
   group.add(borderLeft);
   group.add(borderRight);
-  group.createMultiple(40, 'wall1');
+  group.createMultiple(80, 'wall1');
   group.setAll('body.immovable', 'true');
   return group;
 }
