@@ -94,6 +94,13 @@ eurecaServer.exports.destroyEnemy = function (id, data) {
 	}
 }
 
+//UNUSED SO FAR
+eurecaServer.exports.destroyPlayer = function (id) {
+	findPlayer(id, function (player) {
+		player.remote.destroyOtherPlayer ()
+	})
+}
+
 eurecaServer.exports.sendWinCondition = function (id) {
 	for (var i = 0; i < games.length; i++) {
 		if (games[i].coplayer.id == id) {

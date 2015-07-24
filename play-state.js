@@ -3,6 +3,7 @@ var walls;
 var tanks;
 var players = [];
 var player;
+var layout;
 var enemies = {};
 var playState = function (game) {
   ready = false;
@@ -24,6 +25,8 @@ function preload() {
     game.load.image('graytankhead', 'assets/graytankhead.png');
     game.load.image('tealtankhead', 'assets/tealtankhead.png');
     game.load.image('tealtankbody', 'assets/tealtankbody.png');
+    game.load.image('circletankbody', 'assets/circletankbody.png');
+    game.load.image('circletankhead', 'assets/circletankhead.png');
     game.load.image('horizontal_border', 'assets/horizontal_border.png');
     game.load.image('vertical_border', 'assets/vertical_border.png');
     game.load.image('wood', 'assets/wood.jpg');
@@ -37,7 +40,7 @@ function preload() {
       left: game.input.keyboard.addKey(Phaser.Keyboard.A),
       right: game.input.keyboard.addKey(Phaser.Keyboard.D)
     }
-    this.layout = getLayout(level);
+    layout = getLayout(level);
 
     if (isMultiplayer) server.readyToStart(clientId);
     else ready = true;
@@ -50,10 +53,10 @@ function create() {
   walls = createWallGroup();
   tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
 
-  enactLayout(this.layout);
+  enactLayout(layout);
   
-  for (var i = 0; i < this.layout.players.length; i++) {
-    var p = new Player(game, this.layout.players[i].x, this.layout.players[i].y);
+  for (var i = 0; i < layout.players.length; i++) {
+    var p = new Player(game, layout.players[i].x, layout.players[i].y);
     players.push(p);
     tanks.add(p.heart);
   }
@@ -88,13 +91,16 @@ function create() {
         enemies[id].move();
       }
     }, this);
+
+    /*game.time.events.loop(Phaser.Timer.SECOND, function () {
+      console.log(game.time.fps + " FPS");
+    }, this);*/
   }
   game.time.advancedTiming = true;
 }
 
 function update() {
   if (ready) {
-    game.debug.text(game.time.fps, 2, 14, "#00ff00");
     game.physics.arcade.collide(tanks, walls);
     game.physics.arcade.collide(tanks, tanks);
     game.physics.arcade.collide(bullets, walls, bulletWallCollide, null, this);

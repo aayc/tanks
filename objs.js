@@ -48,7 +48,13 @@ function bulletWallCollide (b, w) {
 
 function destroyTank (a, b) {
   bulletDie(b);
-  if (a.parentFcn.gameObjType == "PLAYER") {}
+  if (a.parentFcn.gameObjType == "PLAYER") {
+    if (isMultiplayer) {}
+    else {
+      players[0].die();
+      gameOver();
+    }
+  }
   else {
     for (var id in enemies) {
       if (id == a.parentFcn.multiplayerIx) {

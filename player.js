@@ -45,4 +45,11 @@ function Player (game, x, y) {
 
             }
       }
+
+      this.die = function () {
+            this.heart.kill();
+            this.head.kill();
+            this.body.kill();
+            
+      }
 }
