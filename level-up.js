@@ -20,10 +20,10 @@ levelUp.prototype = {
 
 		this.adds = [{
 			btn: game.add.sprite(200, 200, 'stat-add'),
-			txt: game.add.text(250, 200, "Increase Movement Speed (current: " + PLAYER_MOVEMENT_SPEED + ", next " + (PLAYER_MOVEMENT_SPEED + 30) + ", cost: " + 1 + ")", this.textOpts),
+			txt: game.add.text(250, 200, "Increase Movement Speed (current: " + PLAYER_MOVEMENT_SPEED + ", next " + (PLAYER_MOVEMENT_SPEED + 15) + ", cost: " + 1 + ")", this.textOpts),
 			txtTemplate: "Increase Movement Speed",
 			stat: "PLAYER_MOVEMENT_SPEED",
-			change: 30,
+			change: 15,
 			cost: 1
 		}, {
 			btn: game.add.sprite(200, 260, 'stat-add'),
@@ -41,10 +41,10 @@ levelUp.prototype = {
 			cost: 2
 		}, {
 			btn: game.add.sprite(200, 380, 'stat-add'),
-			txt: game.add.text(250, 380, "Increase Bullet Speed (current: " + PLAYER_BULLET_SPEED + ", next: " + (PLAYER_BULLET_SPEED + 30) + ", cost: " + 2 + ")", this.textOpts),
+			txt: game.add.text(250, 380, "Increase Bullet Speed (current: " + PLAYER_BULLET_SPEED + ", next: " + (PLAYER_BULLET_SPEED + 20) + ", cost: " + 2 + ")", this.textOpts),
 			txtTemplate: "Increase Bullet Speed",
 			stat: "PLAYER_BULLET_SPEED",
-			change: 30,
+			change: 20,
 			cost: 2
 		}, {
 			btn: game.add.sprite(200, 440, 'stat-add'),
