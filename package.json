@@ -1,0 +1,23 @@
+{
+  "name": "tanks-game",
+  "version": "1.0.0",
+  "description": "Wii-Play style tanks game!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://thatnerd2@github.com/thatnerd2/tanks-game.git"
+  },
+  "author": "Aaron Y. Chan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thatnerd2/tanks-game/issues"
+  },
+  "homepage": "https://github.com/thatnerd2/tanks-game#readme",
+  "dependencies": {
+    "corridors": "^0.1.4",
+    "express": "^4.13.3"
+  }
+}
