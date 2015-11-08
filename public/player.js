@@ -23,6 +23,15 @@ function Player (game, x, y) {
             if (cursors.up.isDown)    { newVy = -PLAYER_MOVEMENT_SPEED; }
             if (cursors.down.isDown)  { newVy =  PLAYER_MOVEMENT_SPEED; }
             if (newVx == 0 && newVy == 0) {
+                  if (isMultiplayer) {
+                        socket.emit("tell", {
+                              msg: "player update v", 
+                              id: playerId, 
+                              heartX: this.heart.x, heartY: this.heart.y,
+                              heartVx: 0, heartVy : 0,
+                              vx: 0, vy: 0
+                        });
+                  }
             	this.heart.body.velocity.x = 0;
             	this.heart.body.velocity.y = 0;
             	this.vx = 0;
@@ -37,8 +46,32 @@ function Player (game, x, y) {
                   this.direction = goalRot;
             	this.vx = newVx;
             	this.vy = newVy;
+                  if (isMultiplayer) {
+                        socket.emit("tell", {
+                              msg: "player update r", 
+                              id: playerId, 
+                              rot: goalRot
+                        });
+
+                        socket.emit("tell", {
+                              msg: "player update v", 
+                              id: playerId, 
+                              heartX: this.heart.x, heartY: this.heart.y,
+                              heartVx: 0, heartVy : 0,
+                              vx: 0, vy: 0
+                        });
+                  }
             	this.rotTween = dualRotateTo(this.body, goalRot, PLAYER_ROTATION_SPEED);
             	this.rotTween.onComplete.add (function () {
+                        if (isMultiplayer) {
+                              socket.emit("tell", {
+                                    msg: "player update v", 
+                                    id: playerId, 
+                                    heartX: this.heart.x, heartY: this.heart.y,
+                                    heartVx: PLAYER_MOVEMENT_SPEED * Math.cos(this.direction), 
+                                    heartVy: PLAYER_MOVEMENT_SPEED * Math.sin(this.direction)
+                              });
+                        }
             		this.heart.body.velocity.x = PLAYER_MOVEMENT_SPEED * Math.cos(this.direction);
             		this.heart.body.velocity.y = PLAYER_MOVEMENT_SPEED * Math.sin(this.direction);
             	}, this);

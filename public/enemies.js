@@ -43,7 +43,7 @@ function BrownTank(id, game, x, y) {
 		spriteHeadName: "browntankhead"
 	}
 	this.patrols = true;
-	this.dir = 1;
+	this.dir = 0.5;
 	this.goalRot = 0;
 	EnemyTank.call(this, game, settings);
 }
@@ -85,7 +85,7 @@ function GrayTank (id, game, x, y) {
 		gameObjType: "GRAY TANK",
 		spriteBodyName: "graytankbody",
 		spriteHeadName: "graytankhead",
-		bulletDelayRequired: 0
+		bulletDelayRequired: 3
 	};
 	this.patrols = true;
 	this.direction = getRandomRotation();
@@ -109,7 +109,7 @@ GrayTank.prototype.patrol = function () {
 }
 GrayTank.prototype.act = function () {
 	this.bulletDelay += 1;
-	if (this.numBullets < this.maxBullets && this.bulletDelay > this.bulletDelayRequirement && 
+	if (this.numBullets < this.maxBullets && this.bulletDelay > this.bulletDelayRequired && 
 		shouldFire(this.heart.x, this.heart.y, this.head.rotation, 1)) {
 		var params = {
 			x: this.heart.x,
@@ -143,7 +143,6 @@ GrayTank.prototype.move = function () {
 		dualRotateTo(this.body, this.direction, this.rotDelay).onComplete.add(function () {
 			this.heart.body.velocity.x = this.movSpeed * Math.cos(this.direction);
 			this.heart.body.velocity.y = this.movSpeed * Math.sin(this.direction);
-			if (isMultiplayer) serverUpdateTankVelocity(this.multiplayerIx);
 		}, this);
 	}
 }

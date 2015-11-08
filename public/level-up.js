@@ -27,10 +27,10 @@ levelUp.prototype = {
 			cost: 1
 		}, {
 			btn: game.add.sprite(200, 260, 'stat-add'),
-			txt: game.add.text(250, 260, "Decrease Rotation Delay (current: " + PLAYER_ROTATION_SPEED + ", next: " + (PLAYER_ROTATION_SPEED - 10) + ", cost: " + 1 + ")", this.textOpts),
+			txt: game.add.text(250, 260, "Decrease Rotation Delay (current: " + PLAYER_ROTATION_SPEED + ", next: " + (PLAYER_ROTATION_SPEED - 30) + ", cost: " + 1 + ")", this.textOpts),
 			txtTemplate: "Decrease Rotation Delay",
 			stat: "PLAYER_ROTATION_SPEED",
-			change: -10,
+			change: -30,
 			cost: 1
 		}, {
 			btn: game.add.sprite(200, 320, 'stat-add'),
@@ -53,6 +53,13 @@ levelUp.prototype = {
 			stat: "PLAYER_LIVES",
 			change: 1,
 			cost: 1
+		}, {
+			btn: game.add.sprite(200, 500, 'stat-add'),
+			txt: game.add.text(250, 500, "Add 1 ricochet (current: " + PLAYER_RICOCHET + ", next: " + (PLAYER_RICOCHET + 1) + ", cost: " + 2 + ")", this.textOpts),
+			txtTemplate: "Add 1 ricochet",
+			stat: "PLAYER_RICOCHET",
+			change: 1,
+			cost: 2
 		}];
 
 		for (var i = 0; i < this.adds.length; i++) {
@@ -63,7 +70,7 @@ levelUp.prototype = {
 		this.validateOptions();
 
 		
-		var playButton = game.add.button(250, 550, 'play-button', this.startNextMission, this);
+		var playButton = game.add.button(250, 600, 'play-button', this.startNextMission, this);
 		game.time.advancedTiming = true;
 	},
 

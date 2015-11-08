@@ -6,24 +6,6 @@ function getRandomRotation () {
 	return Math.random () * (2 * Math.PI) - Math.PI;
 }
 
-function serverUpdateTankRotation (ix) {
-	if (!enemies.hasOwnProperty(ix)) return;
-	var tank = enemies[ix];
-	var data = { ix: ix, goalRot: tank.goalRot };
-	server.updateTankRotation(clientId, data);
-}
-
-function serverUpdateTankVelocity (ix) {
-	if (!enemies.hasOwnProperty(ix)) return;
-	var tank = enemies[ix];
-	var data = {
-		ix: ix,
-		vx: tank.heart.body.velocity.x,
-		vy: tank.heart.body.velocity.y
-	};
-	server.updateTankVelocity(clientId, data);
-}
-
 function shouldFire (x, y, rotation, numBouncesLeft) {
 	var ray = new Phaser.Line(x, y, Math.cos(rotation) * 500 + x, Math.sin(rotation) * 500 + y);
 	var playerIntersect = getPlayerIntersect(ray);
@@ -89,8 +71,8 @@ function getPlayerIntersect (ray) {
 	var maxDistance = Number.POSITIVE_INFINITY;
 	var closestIntersection = null;
 
-	for (var i = 0; i < players.length; i++) {
-		var p = players[i];
+	for (var playerId in players) {
+		var p = players[playerId];
 		var left = p.heart.x - p.body.width * 0.5;
 		var right = p.heart.x + p.body.width * 0.5;
 		var top = p.heart.y - p.body.height * 0.5;
@@ -154,10 +136,10 @@ function getWallIntersection (ray) {
 	return closestIntersection;
 }
 
-function destroyEnemyAt (ix) {
-	if (!enemies.hasOwnProperty(ix)) return;
-	enemies[ix].die();
-	delete enemies[ix];
+function destroyEnemyAt (id) {
+	if (!enemies.hasOwnProperty(id)) return;
+	enemies[id].die();
+	delete enemies[id];
 	if (Object.keys(enemies).length == 0) win();
 }
 

@@ -22,7 +22,6 @@ function fire (params, owner, transmit) {
   if (isMultiplayer && transmit) {
     params.objType = owner.gameObjType;
     if (params.objType != "PLAYER") params.ix = owner.multiplayerIx;
-    server.updateBullet(clientId, params);
   }
 }
 
@@ -48,10 +47,11 @@ function bulletWallCollide (b, w) {
 
 function destroyTank (a, b) {
   bulletDie(b);
+  // If I assume that everything else is in sync then do I need to keep track of being destroyed?
   if (a.parentFcn.gameObjType == "PLAYER") {
     if (isMultiplayer) {}
     else {
-      players[0].die();
+      players[playerId].die();
       gameOver();
     }
   }
