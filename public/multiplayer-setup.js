@@ -36,14 +36,12 @@ multiplayerLobby.prototype = {
 			corridorify(socket, {
 				onConnect: function () {
 					console.log("CORRIDORS CONNECTED");
-
+					multiSettings = {};
 					isMultiplayer = true;
 					socket.on('init', function (data) {
 						multiSettings.type = data.type;
 						multiSettings.ids = data.ids;
 						playerId = multiSettings.type == "HOST" ? data.ids[0] : data.ids[1];
-						console.log("my id is: " + playerId);
-						console.log("rest of the ids: " + data.ids);
 					});
 
 					socket.on('player update v', function (data) {
@@ -56,15 +54,44 @@ multiplayerLobby.prototype = {
 					});
 
 					socket.on('player update r', function (data) {
-						console.log("ROT");
 						players[data.id].rotTween.stop();
 						players[data.id].rotTween = dualRotateTo(players[data.id].body, data.rot, PLAYER_ROTATION_SPEED);
+					});
+
+					socket.on('enemy update head r', function (data) {
+						enemies[data.id].head.rotation = data.curRot;
+						rotateTo(enemies[data.id].head, data.goalRot, data.rotDel);
+					});
+
+					socket.on('enemy update body r', function (data) {
+						enemies[data.id].head.rotation = data.curRot;
+						dualRotateTo(enemies[data.id].body, data.goalRot, data.rotDel);
+					});
+
+					socket.on('enemy update v', function (data) {
+						enemies[data.id].heart.x = data.x;
+						enemies[data.id].heart.y = data.y;
+						enemies[data.id].heart.body.velocity.x = data.vx;
+						enemies[data.id].heart.body.velocity.y = data.vy;
 					})
+
+					socket.on('bullet fired', function (data) {
+						fire(data.args, data.owner);
+					});
+
+					socket.on('enemy destroyed', function (data) {
+						destroyEnemyAt(data.id);
+					});
 
 					socket.on('game begin', function () {
 						$("#code-entry").foundation('reveal', 'close');
 						game.state.start('play-state');
 					});
+
+					socket.on('start next', function (data) {
+						level = data.level;
+						game.state.start('play-state');
+					})
 				},
 				registrationData: {
 					roomKey: code

@@ -96,10 +96,6 @@ levelUp.prototype = {
 	},
 	
 	startNextMission: function () {
-		if (isMultiplayer) {
-			server.readyForNextMission(clientId);
-			game.add.text(250, 480, "Waiting for other player...", {size: "48px", fille: "#FFF", align: "center"});
-		}
-		else game.state.start("play-state");
+		game.state.start("next-mission");
 	}
 }

@@ -5,6 +5,15 @@ var players = [];
 var player;
 var layout;
 var enemies = {};
+
+var updatePlayerMovement = function () {
+  player.handleMovement(this.cursors);
+}
+
+var updatePlayerDirection = function() {
+  player.head.rotation = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
+}
+
 var playState = function (game) {
   ready = false;
 }
@@ -52,14 +61,14 @@ function preload() {
     left: game.input.keyboard.addKey(Phaser.Keyboard.A),
     right: game.input.keyboard.addKey(Phaser.Keyboard.D)
   }
-
-  ready = true;
+  ready = false;
 }
 
 function create() {
   if (layout.grid.length < 16) game.add.sprite(0, 0, 'wood-small');
   else game.add.sprite(0, 0, 'wood-big');
   
+  enemies = {};
   bullets = createBulletGroup();
   walls = createWallGroup(layout.grid.length * WALL_HEIGHT, layout.grid[0].length * WALL_WIDTH);
   tanks = game.add.physicsGroup(Phaser.Physics.ARCADE);
@@ -73,17 +82,11 @@ function create() {
     }
   }
   
-  for (var i = 0; i < layout.enemyTanks.length; i++) {
-    var _ = layout.enemyTanks[i];
-    var _id = uuid();
-    var enemy = new _.tank(_id, game, _.position.x, _.position.y);
-    tanks.add(enemy.heart);
-    enemies[_id] = enemy;
-  }
+
   
   for (var i = 0; i < layout.players.length; i++) {
     var p = new Player(game, layout.players[i].x, layout.players[i].y);
-    if (isMultiplayer) { players[multiSettings.ids[i]] = p; console.log("id for this tank: " + multiSettings.ids[i]) }
+    if (isMultiplayer) { players[multiSettings.ids[i]] = p; }
     else players[playerId] = p;
     tanks.add(p.heart);
   }
@@ -91,7 +94,7 @@ function create() {
   player = players[playerId];
 
   game.input.onDown.add(function () {
-    if (player.numBullets <= PLAYER_BULLET_LIMIT && !game.paused) {
+    if (player.numBullets <= PLAYER_BULLET_LIMIT && !game.paused && !player.dead) {
       var angleToMouse = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
       var params = {
         rot: angleToMouse,
@@ -101,43 +104,54 @@ function create() {
         numBounces: PLAYER_RICOCHET
       }
       
-      fire(params, player, true);
+      fire(params, player);
     }
   });
 
+  var createEnemies = function (enemyIds) {
+    for (var i = 0; i < layout.enemyTanks.length; i++) {
+      var _ = layout.enemyTanks[i];
+      var _id = isMultiplayer ? enemyIds[i] : uuid();
+      var enemy = new _.tank(_id, game, _.position.x, _.position.y);
+      tanks.add(enemy.heart);
+      enemies[_id] = enemy;
+    }
+
+    if (!isMultiplayer || (isMultiplayer && multiSettings.type == "HOST")) {
+    
+      for (var id in enemies) {
+         enemies[id].patrol();
+         enemies[id].explore();
+      }
+
+      game.time.events.loop(Phaser.Timer.SECOND / 10, function () {
+        for (var id in enemies) {
+          enemies[id].act();
+        }
+      }, this);
+
+      game.time.events.loop(Phaser.Timer.SECOND, function () {
+        for (var id in enemies) {
+          enemies[id].move();
+        }
+      }, this);
+    }
+    ready = true;
+  }
   
-  for (var id in enemies) {
-     enemies[id].patrol();
+  if (isMultiplayer) {
+    socket.once('enemy ids', function (data) {
+      createEnemies(data.enemyIds);
+    });
+    socket.emit('getEnemyIds', {n: layout.enemyTanks.length});
+  } else {
+    createEnemies([]);
   }
 
-  game.time.events.loop(Phaser.Timer.SECOND / 10, function () {
-    for (var id in enemies) {
-      enemies[id].act();
-    }
-  }, this);
-
-  game.time.events.loop(Phaser.Timer.SECOND, function () {
-    for (var id in enemies) {
-      enemies[id].move();
-    }
-  }, this);
-  for (var id in enemies) {
-    enemies[id].move();
-  }
-
-  game.time.events.loop(Phaser.Timer.SECOND, function () {
-    console.log(game.time.fps + " FPS");
-  }, this);
-  game.time.advancedTiming = true;
-
-  watch(game.input.activePointer, ["x", "y"], function() {
-    player.head.rotation = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
-  });
+  watch(game.input.activePointer, ["x", "y"], updatePlayerDirection);
 
   for(var key in this.cursors) {
-    watch(this.cursors[key], ["isDown", "isUp"], function () {
-      player.handleMovement(this.cursors);
-    }.bind(this));
+    watch(this.cursors[key], ["isDown"], updatePlayerMovement.bind(this));
   }
 }
 
@@ -149,4 +163,11 @@ function update() {
     game.physics.arcade.collide(bullets, bullets, bulletBulletCollide, null, this);
     game.physics.arcade.collide(tanks, bullets, destroyTank, null, this);
   }
+}
+
+function cleanGame () {
+  for (var key in this.cursors) {
+    unwatch(this.cursors[key], ["isDown"], updatePlayerMovement)
+  }
+  unwatch(game.input.activePointer, ["x", "y"], updatePlayerDirection);
 }

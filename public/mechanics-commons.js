@@ -136,6 +136,33 @@ function getWallIntersection (ray) {
 	return closestIntersection;
 }
 
+function getDistanceToForwardWall (x, y, direction) { 
+	var rayForward = new Phaser.Line(x, y, Math.cos(direction) * 1000 + x, Math.sin(this.direction) * 1000 + y);
+	var wallIntersect = getWallIntersection(rayForward);
+	var distance = 200;
+	if (wallIntersect != null) distance = game.math.distance(x, y, wallIntersect.x, wallIntersect.y);
+	return distance;
+}
+
+function getClosestPlayerTo(x, y, p) {
+	var nearest = 2000;
+	var ret;
+	for (var k in p) {
+		var d = game.math.distance(x, y, p[k].heart.x, p[k].heart.y);
+		if (nearest > d) { nearest = d; ret = p[k]; }
+	}
+	return ret;
+}
+
+function getPlayerInSight (x, y, p) {
+	for (var k in p) {
+		var rayToPlayer = new Phaser.Line(x, y, p[k].heart.x, p[k].heart.y);
+		var intersect = getWallIntersection(rayToPlayer);
+		if (intersect == null) return p[k];
+	}
+	return null;
+}
+
 function destroyEnemyAt (id) {
 	if (!enemies.hasOwnProperty(id)) return;
 	enemies[id].die();

@@ -9,7 +9,7 @@ function createBulletGroup () {
   return group;
 }
 
-function fire (params, owner, transmit) {
+function fire (params, owner) {
   var bullet = bullets.getFirstDead();
   bullet.reset(params.x, params.y);
   bullet.body.velocity.x = params.speed * Math.cos(params.rot);
@@ -17,30 +17,34 @@ function fire (params, owner, transmit) {
   bullet.rotation = params.rot;
   bullet.bouncesLeft = params.numBounces;
   bullet.owner = owner;
-  owner.numBullets++;
+  if (owner !== null) owner.numBullets++;
 
-  if (isMultiplayer && transmit) {
-    params.objType = owner.gameObjType;
-    if (params.objType != "PLAYER") params.ix = owner.multiplayerIx;
+  /* If the owner is null then it's from the other computer */
+  if (isMultiplayer && owner !== null) {
+    socket.emit('tell', {
+      msg: "bullet fired",
+      args: params,
+      owner: null
+    });
   }
 }
 
 function bulletDie (obj) {
   obj.kill();
-  obj.owner.numBullets -= 1;
+  if (obj.owner !== null) obj.owner.numBullets -= 1;
 }
 
 function bulletBulletCollide (a, b) {
   a.kill();
   b.kill();
-  a.owner.numBullets -= 1;
-  b.owner.numBullets -= 1;
+  if (a.owner !== null) a.owner.numBullets -= 1;
+  if (b.owner !== null) b.owner.numBullets -= 1;
 }
 
 function bulletWallCollide (b, w) {
   if (b.bouncesLeft == 0) {
     b.kill();
-    b.owner.numBullets -= 1;
+    if (b.owner !== null) b.owner.numBullets -= 1;
   }
   else b.bouncesLeft--;
 }
@@ -49,26 +53,41 @@ function destroyTank (a, b) {
   bulletDie(b);
   // If I assume that everything else is in sync then do I need to keep track of being destroyed?
   if (a.parentFcn.gameObjType == "PLAYER") {
-    if (isMultiplayer) {}
+    if (isMultiplayer) {
+      a.parentFcn.die();
+      for (var p in players) {
+        if (!players[p].dead) return;
+      }
+      gameOver();
+    }
     else {
       players[playerId].die();
       gameOver();
     }
   }
   else {
-    if (isMultiplayer) server.destroyEnemy(clientId, id);
-    else destroyEnemyAt(a.parentFcn.id);
+    if (isMultiplayer) {
+      socket.emit('tell', {
+        msg: "enemy destroyed",
+        id: a.parentFcn.id
+      });
+    }
+    destroyEnemyAt(a.parentFcn.id);
   }
 }
 
 // ----------------- WALL ----------------------- //
 
-function createWallGroup () {
+function createWallGroup (levelHeight, levelWidth) {
   var group = game.add.physicsGroup(Phaser.Physics.ARCADE);
   borderTop = game.add.sprite(0, 0, 'horizontal_border');
-  borderBottom = game.add.sprite(0, GAME_HEIGHT - WALL_HEIGHT, 'horizontal_border');
+  borderBottom = game.add.sprite(0, levelHeight, 'horizontal_border');
   borderLeft = game.add.sprite(0, 0, 'vertical_border');
-  borderRight = game.add.sprite(GAME_WIDTH - WALL_WIDTH, 0, 'vertical_border');
+  borderRight = game.add.sprite(levelWidth - WALL_WIDTH, 0, 'vertical_border');
+  borderLeft.height = levelHeight;
+  borderRight.height = levelHeight;
+  borderTop.width = levelWidth;
+  borderBottom.width = levelWidth;
   group.add(borderTop);
   group.add(borderBottom);
   group.add(borderLeft);

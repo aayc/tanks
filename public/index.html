@@ -12,6 +12,7 @@
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script type="text/javascript" src="js/watch.js"></script>
     <script type="text/javascript" src="js/easystar-0.2.0.min.js"></script>
+    <script type="text/javascript" src="js/corridors-client.js"></script>
     
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="play-state.js"></script>
@@ -20,7 +21,7 @@
     <script type="text/javascript" src="title-state.js"></script>
     <script type="text/javascript" src="level-up.js"></script>
     <script type="text/javascript" src="mechanics-commons.js"></script>
-    <script type="text/javascript" src="enemies.js"></script>
+    <script type="text/javascript" src="enemies-inheritance.js"></script>
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="objs.js"></script>
     <script type="text/javascript" src="level-manager.js"></script>
@@ -59,6 +60,7 @@
   }
   
   function gameOver () {
+    cleanGame();
     game.paused = true;
     game.add.text(GAME_WIDTH/2, 100, "GAME OVER", {size: "32px", fille: "#FFF", align: "center"});
     
@@ -75,28 +77,31 @@
   }
 
   function win () {
+    cleanGame();
     game.paused = true;
     game.add.text(GAME_WIDTH/2, 100, "YOU WIN", {size: "32px", fille: "#FFF", align: "center"});
     level++;
+
+    if (isMultiplayer) socket.emit('wonLevel');
     
     setTimeout(nextLevel, 1500);
   }
 
   function restartLevel () {
-    players = [];
+    players = {};
     game.paused = false;
     game.state.start("next-mission");
   }
 
   function restart () {
     game.paused = false;
-    players = [];
+    players = {};
     destroyAllEnemies();
     game.state.start("game-title");
   }
 
   function nextLevel () {
-    players = [];
+    players = {};
     game.paused = false;
     if (level % 2 == 0) {
       skillPts++;

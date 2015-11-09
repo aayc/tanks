@@ -13,9 +13,9 @@ function Player (game, x, y) {
 	this.vx = 0;
 	this.vy = 0;
       this.direction = 0;
+      this.dead = false;
 
 	this.handleMovement = function (cursors) {
-		// Could be a faster way that checks left, right, down, up DIRECTLy and then can short break out early.
 		var newVx = 0;
 		var newVy = 0;
             if (cursors.left.isDown)  { newVx = -PLAYER_MOVEMENT_SPEED; }
@@ -83,6 +83,6 @@ function Player (game, x, y) {
             this.heart.kill();
             this.head.kill();
             this.body.kill();
-            
+            this.dead = true;
       }
 }
