@@ -18,7 +18,6 @@ corridors.configure({
 			if (user.room.ids.length == 0) {
 				user.room.generateIds(data.n);
 			}
-			console.log("REPLYING TO USER WITH IDS: " + user.room.ids);
 			corridors.replyTo(user, "enemy ids", {enemyIds: user.room.ids});
 		},
 		wonLevel: function (user, data) {

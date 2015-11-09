@@ -116,11 +116,11 @@ GrayTank.prototype.patrol = function () {
 			msg: "enemy update head r", 
 			id: this.id, goalRot: this.goalRot, 
 			curRot: this.head.rotation,
-			rotDel: this.rotDelay - (this.seePlayer ? 400 : 0)
+			rotDel: this.rotDelay - (this.seePlayer !== null ? 400 : 0)
 		});
 	}
 
-	rotateTo(this.head, this.goalRot, this.rotDelay - (this.seePlayer ? 400 : 0)).onComplete.add(function () {
+	rotateTo(this.head, this.goalRot, this.rotDelay - (this.seePlayer !== null ? 400 : 0)).onComplete.add(function () {
 		this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
 		this.patrol();
 	}, this);
@@ -198,7 +198,7 @@ function TealTank(id, game, x, y) {
 	this.patrols = true;
 	this.goalRot = 0;
 	this.movSpeed = 50;
-	this.seePlayer = false;
+	this.seePlayer = null;
 	this.direction = getRandomRotation();
 
 	this.wayPoints = [];
@@ -213,16 +213,40 @@ inherit(TealTank, EnemyTank);
 TealTank.prototype.patrol = function () {
 	if (this.dead) return;
 
-	if (this.seePlayer) this.goalRot = getRadTo(player.heart.x, player.heart.y, this.heart.x, this.heart.y);
+	if (this.seePlayer !== null) this.goalRot = getRadTo(this.seePlayer.heart.x, this.seePlayer.heart.y, this.heart.x, this.heart.y);
 	else this.goalRot = getRandomRotation();
 
-	rotateTo(this.head, this.goalRot, this.rotDelay - (this.seePlayer ? 300 : 0)).onComplete.add(function () {
+	if (isMultiplayer) {
+		socket.emit('tell', {
+			msg: "enemy update head r", 
+			id: this.id, goalRot: this.goalRot, 
+			curRot: this.head.rotation,
+			rotDel: this.rotDelay - (this.seePlayer !== null ? 300 : 0)
+		});
+	}
+
+	rotateTo(this.head, this.goalRot, this.rotDelay - (this.seePlayer !== null ? 300 : 0)).onComplete.add(function () {
 		this.head.rotation = Phaser.Math.wrapAngle(this.head.rotation, true);
 		this.patrol();
 	}, this);
 }
 
 TealTank.prototype.move = function () {
+	/*if (isMultiplayer) {
+		socket.emit('tell', {
+			msg: "enemy update v",
+			id: this.id,
+			vx: this.heart.body.velocity.x, vy: this.heart.body.velocity.y,
+			x: this.heart.x, y: this.heart.y
+		});
+
+		socket.emit('tell', {
+			msg: "enemy update body r",
+			id: this.id, goalRot: this.direction,
+			rotDel: this.rotDelay,
+			curRot: this.body.rotation
+		});
+	}*/
 	if (this.state == "PATH") {
 		this.wayPoints = [];
 		this.wayIx = 0;
@@ -251,16 +275,38 @@ TealTank.prototype.move = function () {
 			this.state = "SEEK";
 		}).bind(this));
 		pathfind.calculate();
-		
 	}
 	else if (this.state == "SEEK") {
 		if (!this.onTheWay) {
 			this.direction = getRadTo(this.wayPoints[this.wayIx][0], this.wayPoints[this.wayIx][1], this.heart.x, this.heart.y);
+			if (isMultiplayer) {
+				socket.emit('tell', {
+					msg: "enemy update v",
+					id: this.id,
+					vx: 0, vy: 0,
+					x: this.heart.x, y: this.heart.y
+				});
+				socket.emit('tell', {
+					msg: "enemy update body r",
+					id: this.id, goalRot: this.direction,
+					rotDel: this.rotDelay,
+					curRot: this.body.rotation
+				});
+			}
 			this.heart.body.velocity.x = 0;
 			this.heart.body.velocity.y = 0;
 			dualRotateTo(this.body, this.direction, this.rotDelay).onComplete.add(function () {
 				this.heart.body.velocity.x = this.movSpeed * Math.cos(this.direction);
 				this.heart.body.velocity.y = this.movSpeed * Math.sin(this.direction);
+				if (isMultiplayer) {
+					socket.emit('tell', {
+						msg: "enemy update v",
+						id: this.id, x: this.heart.x, y: this.heart.y,
+						vx: this.heart.body.velocity.x,
+						vy: this.heart.body.velocity.y
+					});
+				}
+
 			}, this);
 			this.onTheWay = true;
 		}
@@ -269,9 +315,7 @@ TealTank.prototype.move = function () {
 			if (Math.random () < 0.2) {
 				this.state = "PATH";
 			}
-			var rayToPlayer = new Phaser.Line(this.heart.x, this.heart.y, player.heart.x, player.heart.y);
-			var intersect = getWallIntersection(rayToPlayer);
-			this.seePlayer = (intersect == null);
+			this.seePlayer = getPlayerInSight(this.heart.x, this.heart.y, players);
 
 			var distance = game.math.distance(this.heart.x, this.heart.y, this.wayPoints[this.wayIx][0], this.wayPoints[this.wayIx][1]);
 			if (distance <= 100) {
@@ -374,11 +418,33 @@ BlueTank.prototype.move = function () {
 	else if (this.state == "SEEK") {
 		if (!this.onTheWay) {
 			this.direction = getRadTo(this.wayPoints[this.wayIx][0], this.wayPoints[this.wayIx][1], this.heart.x, this.heart.y);
+			if (isMultiplayer) {
+				socket.emit('tell', {
+					msg: "enemy update v",
+					id: this.id,
+					vx: 0, vy: 0,
+					x: this.heart.x, y: this.heart.y
+				});
+				socket.emit('tell', {
+					msg: "enemy update body r",
+					id: this.id, goalRot: this.direction,
+					rotDel: this.rotDelay,
+					curRot: this.body.rotation
+				});
+			}
 			this.heart.body.velocity.x = 0;
 			this.heart.body.velocity.y = 0;
 			dualRotateTo(this.body, this.direction, this.rotDelay).onComplete.add(function () {
 				this.heart.body.velocity.x = this.movSpeed * Math.cos(this.direction);
 				this.heart.body.velocity.y = this.movSpeed * Math.sin(this.direction);
+				if (isMultiplayer) {
+					socket.emit('tell', {
+						msg: "enemy update v",
+						id: this.id, x: this.heart.x, y: this.heart.y,
+						vx: this.heart.body.velocity.x,
+						vy: this.heart.body.velocity.y
+					});
+				}
 			}, this);
 			this.onTheWay = true;
 		}
@@ -439,6 +505,15 @@ function GreenTank(id, game, x, y) {
 inherit(GreenTank, EnemyTank);
 GreenTank.prototype.patrol = function () {
 	if (this.dead) return;
+
+	if (isMultiplayer) {
+		socket.emit('tell', {
+			msg: "enemy update head r", 
+			id: this.id, goalRot: this.goalRot, 
+			curRot: this.head.rotation,
+			rotDel: this.rotDelay
+		});
+	}
 
 	rotateTo(this.head, this.goalRot, this.rotDelay).onComplete.add(function () {
 		this.dir *= -1;

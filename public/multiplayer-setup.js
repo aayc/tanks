@@ -64,7 +64,7 @@ multiplayerLobby.prototype = {
 					});
 
 					socket.on('enemy update body r', function (data) {
-						enemies[data.id].head.rotation = data.curRot;
+						enemies[data.id].body.rotation = data.curRot;
 						dualRotateTo(enemies[data.id].body, data.goalRot, data.rotDel);
 					});
 
