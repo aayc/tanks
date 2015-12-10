@@ -4,6 +4,7 @@ var express = require('express')
 var corridors = require('corridors');
 var uuid = require('node-uuid');
 app.use(express.static("public"));
+var port = process.env.PORT || 4004;
 
 corridors.init(server);
 corridors.configure({
@@ -80,4 +81,4 @@ corridors.configure({
 corridors.run();
 
  
-server.listen(4004);
+server.listen(port);
