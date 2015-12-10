@@ -5,6 +5,8 @@ var players = [];
 var player;
 var layout;
 var enemies = {};
+var cursors = {};
+
 
 var updatePlayerMovement = function () {
   player.handleMovement(this.cursors);
@@ -55,12 +57,13 @@ function preload() {
   game.load.image('bullet_slow', 'assets/bullet_slow.png');
   game.physics.startSystem(Phaser.Physics.ARCADE);
 
-  this.cursors = {
+  cursors = {
     up: game.input.keyboard.addKey(Phaser.Keyboard.W),
     down: game.input.keyboard.addKey(Phaser.Keyboard.S),
     left: game.input.keyboard.addKey(Phaser.Keyboard.A),
     right: game.input.keyboard.addKey(Phaser.Keyboard.D)
   }
+
   ready = false;
 }
 
@@ -82,8 +85,6 @@ function create() {
     }
   }
   
-
-  
   for (var i = 0; i < layout.players.length; i++) {
     var p = new Player(game, layout.players[i].x, layout.players[i].y);
     if (isMultiplayer) { players[multiSettings.ids[i]] = p; }
@@ -93,6 +94,29 @@ function create() {
 
   player = players[playerId];
 
+  var createEnemies = function (enemyIds) {
+    for (var i = 0; i < layout.enemyTanks.length; i++) {
+      var _ = layout.enemyTanks[i];
+      var _id = isMultiplayer ? enemyIds[i] : uuid();
+      var enemy = new _.tank(_id, game, _.position.x, _.position.y);
+      tanks.add(enemy.heart);
+      enemies[_id] = enemy;
+    }
+    if (isMultiplayer) socket.emit('readyToStartGame');
+    else startGame();
+  }
+  
+  if (isMultiplayer) {
+    socket.once('enemy ids', function (data) {
+      createEnemies(data.enemyIds);
+    });
+    socket.emit('getEnemyIds', {n: layout.enemyTanks.length});
+  } else {
+    createEnemies([]);
+  }
+}
+
+function startGame () {
   game.input.onDown.add(function () {
     if (player.numBullets <= PLAYER_BULLET_LIMIT && !game.paused && !player.dead) {
       var angleToMouse = Math.atan2(game.input.activePointer.y - player.heart.y, game.input.activePointer.x - player.heart.x);
@@ -107,52 +131,32 @@ function create() {
       fire(params, player);
     }
   });
-
-  var createEnemies = function (enemyIds) {
-    for (var i = 0; i < layout.enemyTanks.length; i++) {
-      var _ = layout.enemyTanks[i];
-      var _id = isMultiplayer ? enemyIds[i] : uuid();
-      var enemy = new _.tank(_id, game, _.position.x, _.position.y);
-      tanks.add(enemy.heart);
-      enemies[_id] = enemy;
-    }
-
-    if (!isMultiplayer || (isMultiplayer && multiSettings.type == "HOST")) {
-    
-      for (var id in enemies) {
-         enemies[id].patrol();
-         enemies[id].explore();
-      }
-
-      game.time.events.loop(Phaser.Timer.SECOND / 10, function () {
-        for (var id in enemies) {
-          enemies[id].act();
-        }
-      }, this);
-
-      game.time.events.loop(Phaser.Timer.SECOND, function () {
-        for (var id in enemies) {
-          enemies[id].move();
-        }
-      }, this);
-    }
-    ready = true;
-  }
   
-  if (isMultiplayer) {
-    socket.once('enemy ids', function (data) {
-      createEnemies(data.enemyIds);
-    });
-    socket.emit('getEnemyIds', {n: layout.enemyTanks.length});
-  } else {
-    createEnemies([]);
+  if (!isMultiplayer || (isMultiplayer && multiSettings.type == "HOST")) {
+    for (var id in enemies) {
+       enemies[id].patrol();
+       enemies[id].explore();
+    }
+
+    game.time.events.loop(Phaser.Timer.SECOND / 10, function () {
+      for (var id in enemies) {
+        enemies[id].act();
+      }
+    }, this);
+
+    game.time.events.loop(Phaser.Timer.SECOND, function () {
+      for (var id in enemies) {
+        enemies[id].move();
+      }
+    }, this);
   }
 
   watch(game.input.activePointer, ["x", "y"], updatePlayerDirection);
 
   for(var key in this.cursors) {
-    watch(this.cursors[key], ["isDown"], updatePlayerMovement.bind(this));
+    watch(cursors[key], ["isDown"], updatePlayerMovement.bind(this));
   }
+  ready = true;
 }
 
 function update() {

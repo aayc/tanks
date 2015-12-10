@@ -35,7 +35,6 @@ multiplayerLobby.prototype = {
 			socket = io.connect();
 			corridorify(socket, {
 				onConnect: function () {
-					console.log("CORRIDORS CONNECTED");
 					multiSettings = {};
 					isMultiplayer = true;
 					socket.on('init', function (data) {
@@ -81,6 +80,24 @@ multiplayerLobby.prototype = {
 
 					socket.on('enemy destroyed', function (data) {
 						destroyEnemyAt(data.id);
+					});
+
+					socket.on('start game', function (data) {
+						startGame();
+					});
+
+					socket.on('dead', function (data) {
+						level = 1;
+				        skillPts = 0;
+				        restoreConfig();
+				        setTimeout(restart, 1500);
+				        isMultiplayer = false;
+				        multiSettings = {};
+					});
+
+					socket.on('restart level', function (data) {
+						console.log("RESTART LEVEL");
+						setTimeout(restartLevel, 1500);
 					});
 
 					socket.on('game begin', function () {

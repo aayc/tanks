@@ -22,16 +22,34 @@ corridors.configure({
 		},
 		wonLevel: function (user, data) {
 			user.room.ids = [];
-			user.room.readyFlags = 0;
+			user.room.level += 1;
 		},
 		lostLevel: function (user, data) {
-			console.log("LOSE");
+			user.room.readyFlags += 1;
+			console.log("# ready flags: " + user.room.readyFlags);
+			if (user.room.readyFlags >= 2) {
+				user.room.numLives -= 1;
+				user.room.readyFlags = 0;
+				console.log("NUM LIVES LEFT: " + user.room.numLives);
+				if (user.room.numLives == 0) {
+					user.room._tellRoom("dead");
+				} else {
+					user.room._tellRoom("restart level");
+				}
+			}
 		},
 		readyForNextLevel: function (user, data) {
 			user.room.readyFlags += 1;
 			if (user.room.readyFlags >= 2) {
-				user.room.level += 1;
 				user.room._tellRoom('start next', {level: user.room.level});
+				user.room.readyFlags = 0;
+			}
+		},
+		readyToStartGame: function (user, data) {
+			user.room.readyFlags += 1;
+			if (user.room.readyFlags >= 2) {
+				user.room._tellRoom('start game');
+				user.room.readyFlags = 0;
 			}
 		}
 	},
