@@ -4,6 +4,7 @@ As a kid, I loved the tanks minigame in Wii Play.  Since I no longer have access
   
 It's playable but not fully complete (it's missing an ending screen).  I've also added skill points and upgrades to the game, so you too can have bullets as fast as those teal tanks.
 
+Playable here on Heroku: https://enigmatic-reef-9847.herokuapp.com
 
 ## Gameplay (Level 2)
 ![alt tag](readme-imgs/gameplay-img.png)
